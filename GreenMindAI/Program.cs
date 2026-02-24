@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace GreenMindAI
 {
@@ -18,7 +19,6 @@ namespace GreenMindAI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-           
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -34,14 +34,13 @@ namespace GreenMindAI
 
                         var response = new
                         {
-                            message = errors.First() 
+                            message = errors.First()
                         };
 
                         return new BadRequestObjectResult(response);
                     };
                 });
 
-            
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
@@ -71,11 +70,9 @@ namespace GreenMindAI
                 });
             });
 
-         
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<JwtService>();
 
-          
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -94,14 +91,42 @@ namespace GreenMindAI
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
                 };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+
+                        var result = JsonSerializer.Serialize(new
+                        {
+                            message = "Unauthorized: Token is missing or invalid"
+                        });
+
+                        await context.Response.WriteAsync(result);
+                    },
+
+                    OnForbidden = async context =>
+                    {
+                        context.Response.StatusCode = 403;
+                        context.Response.ContentType = "application/json";
+
+                        var result = JsonSerializer.Serialize(new
+                        {
+                            message = "Forbidden: You do not have access"
+                        });
+
+                        await context.Response.WriteAsync(result);
+                    }
+                };
             });
 
-         
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
-          
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -110,7 +135,6 @@ namespace GreenMindAI
 
             app.UseHttpsRedirection();
 
-            
             app.UseAuthentication();
             app.UseAuthorization();
 

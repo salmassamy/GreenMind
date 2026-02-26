@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GreenMind.Domain\GreenMind.Domain.csproj" />
+    <ProjectReference Include="..\GreenMind.Presistance\GreenMind.Presistance.csproj" />
     <ProjectReference Include="..\GreenMind.ServiceAbstraction\GreenMind.ServiceAbstraction.csproj" />
   </ItemGroup>
 

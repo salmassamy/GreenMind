@@ -148,6 +148,14 @@ namespace GreenMind.Presistance.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Garden Supplies"
+                        });
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.ChatLog", b =>
@@ -309,6 +317,19 @@ namespace GreenMind.Presistance.Data.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 1,
+                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Organic soil",
+                            ImageURL = "soil.jpg",
+                            Name = "Potting Mix",
+                            Price = 100m,
+                            StockQuantity = 50
+                        });
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Review", b =>

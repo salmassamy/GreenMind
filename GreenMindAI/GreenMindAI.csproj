@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -17,10 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GreenMind.Domain\GreenMind.Domain.csproj" />
     <ProjectReference Include="..\GreenMind.Presentation\GreenMind.Presentation.csproj" />
     <ProjectReference Include="..\GreenMind.Presistance\GreenMind.Presistance.csproj" />
-	  <ProjectReference Include="..\GreenMind.ServiceAbstraction\GreenMind.ServiceAbstraction.csproj" />
-	  <ProjectReference Include="..\GreenMind.Service\GreenMind.Service.csproj" />
+    <ProjectReference Include="..\GreenMind.ServiceAbstraction\GreenMind.ServiceAbstraction.csproj" />
+    <ProjectReference Include="..\GreenMind.Service\GreenMind.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

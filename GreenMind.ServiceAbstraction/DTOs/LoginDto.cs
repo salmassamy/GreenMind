@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace GreenMind.Service.Authentication.DTOs
 {
@@ -7,9 +8,10 @@ namespace GreenMind.Service.Authentication.DTOs
         [Required]
         [EmailAddress]
         public string Email { get; set; } = null!;
-
+     
         [Required]
         [MinLength(6)]
+       
         public string Password { get; set; } = null!;
     }
 }

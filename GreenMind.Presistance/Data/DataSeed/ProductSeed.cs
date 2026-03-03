@@ -26,6 +26,7 @@ namespace GreenMind.Presistance.Data.DataSeed
                    
                     CreatedDate = new DateTime(2026, 1, 1)
                 }
+
             );
         }
     }

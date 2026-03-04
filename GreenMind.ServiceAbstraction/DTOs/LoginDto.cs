@@ -1,15 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace GreenMind.Service.Authentication.DTOs
+namespace GreenMind.ServiceAbstraction.Authentication.DTOs
 {
     public class LoginDto
     {
         [Required]
-        [EmailAddress]
-        public string Email { get; set; } = null!;
+        public string Email { get; set; } = null!;   // Email OR UserName
 
         [Required]
         [MinLength(6)]
         public string Password { get; set; } = null!;
+
+        [Required]
+        public string Role { get; set; } = null!;    // User أو Admin
     }
 }

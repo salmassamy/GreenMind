@@ -1,33 +1,93 @@
 ﻿using GreenMind.Service.Authentication.DTOs;
+using GreenMind.Service.Authentication.Services;
 using GreenMind.ServiceAbstraction.Authentication;
+using GreenMind.ServiceAbstraction.Authentication.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-
+using GreenMind.ServiceAbstraction.Interfaces;
 namespace GreenMindAI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
+        private readonly IAuthService _auth;
+        private readonly ISocialAuthService _social;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService auth, ISocialAuthService social)
         {
-            _authService = authService;
+            _auth = auth;
+            _social = social;
         }
 
-      
-        [AllowAnonymous]
-        [HttpPost("register-user")]
-        public async Task<IActionResult> RegisterUser(RegisterUserDto dto)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             try
             {
-                var token = await _authService.RegisterUserAsync(dto);
-                return Ok(token);
+                var res = await _auth.RegisterUserAsync(dto);
+                return Ok(res);
+            }
+            catch (AuthHttpException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            try
+            {
+                var res = await _auth.LoginAsync(dto);
+                return Ok(res);
+            }
+            catch (AuthHttpException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
+        {
+            try
+            {
+                await _auth.ForgotPasswordAsync(dto);
+                return Ok(new { message = "If the account exists, a reset token was generated." });
+            }
+            catch (AuthHttpException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            try
+            {
+                await _auth.ResetPasswordAsync(dto);
+                return Ok(new { message = "Password updated successfully." });
+            }
+            catch (AuthHttpException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("google")]
+        public async Task<IActionResult> Google([FromBody] SocialLoginDto dto)
+        {
+            try
+            {
+                // مهم: من غير deconstruction عشان مايحصلش infer error
+                var info = await _social.VerifyGoogleAsync(dto.Token);
+                var res = await _auth.ExternalLoginAsync(info.Email, info.Name, dto.Role);
+                return Ok(res);
+            }
+            catch (AuthHttpException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -35,22 +95,22 @@ namespace GreenMindAI.Controllers
             }
         }
 
-     
-        [AllowAnonymous]
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        [HttpPost("facebook")]
+        public async Task<IActionResult> Facebook([FromBody] SocialLoginDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             try
             {
-                var token = await _authService.LoginAsync(dto);
-                return Ok(token);
+                var info = await _social.VerifyFacebookAsync(dto.Token);
+                var res = await _auth.ExternalLoginAsync(info.Email, info.Name, dto.Role);
+                return Ok(res);
+            }
+            catch (AuthHttpException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                return Unauthorized(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

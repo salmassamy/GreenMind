@@ -9,7 +9,7 @@ namespace GreenMindAI.DataSeed
     {
         public static async Task SeedAsync(ApplicationDbContext context, IPasswordHasherService hasher)
         {
-            // لو فيه Admin بنفس الإيميل، متعملش حاجة
+          
             var exists = await context.Admins.AnyAsync(a => a.Email.ToLower() == "admin@greenmind.com");
             if (exists) return;
 

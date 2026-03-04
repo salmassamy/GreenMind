@@ -13,6 +13,8 @@ namespace GreenMind.Domain.Entities
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
 
+        public string? ResetToken { get; set; }
+
         public ICollection<Address> Addresses { get; set; } = new HashSet<Address>();
         public Cart Cart { get; set; } = null!;
     }

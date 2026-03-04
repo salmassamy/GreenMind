@@ -4,8 +4,8 @@ using GreenMind.Service.Authentication.DTOs;
 using GreenMind.ServiceAbstraction.Authentication;
 using GreenMind.ServiceAbstraction.Authentication.DTOs;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 using GreenMind.ServiceAbstraction.Interfaces;
+
 namespace GreenMind.Service.Authentication.Services
 {
     public class AuthService : IAuthService
@@ -24,15 +24,11 @@ namespace GreenMind.Service.Authentication.Services
             _hasher = hasher;
         }
 
-        // =========================
-        // Register User (Only User signup)
-        // =========================
         public async Task<AuthResponseDto> RegisterUserAsync(RegisterUserDto dto)
         {
             var email = dto.Email.Trim().ToLower();
             var name = dto.Name.Trim();
 
-            // Email unique across Users & Admins
             var emailExists =
                 await _context.Users.AnyAsync(x => x.Email.ToLower() == email) ||
                 await _context.Admins.AnyAsync(x => x.Email.ToLower() == email);
@@ -40,7 +36,6 @@ namespace GreenMind.Service.Authentication.Services
             if (emailExists)
                 throw new AuthHttpException(400, "Email already exists");
 
-            // UserName unique across Users & Admins
             var nameExists =
                 await _context.Users.AnyAsync(x => x.Name == name) ||
                 await _context.Admins.AnyAsync(x => x.Name == name);
@@ -68,9 +63,6 @@ namespace GreenMind.Service.Authentication.Services
             };
         }
 
-        // =========================
-        // Login (Role + Email OR UserName)
-        // =========================
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
             var key = dto.Email.Trim();
@@ -81,7 +73,6 @@ namespace GreenMind.Service.Authentication.Services
 
             if (role == "User")
             {
-                // role mismatch: exists in Admins => 403
                 var adminMismatch = await _context.Admins
                     .AnyAsync(a => a.Email.ToLower() == key.ToLower() || a.Name == key);
 
@@ -102,8 +93,6 @@ namespace GreenMind.Service.Authentication.Services
             }
             else
             {
-                // role == Admin
-                // role mismatch: exists in Users => 403
                 var userMismatch = await _context.Users
                     .AnyAsync(u => u.Email.ToLower() == key.ToLower() || u.Name == key);
 
@@ -123,6 +112,7 @@ namespace GreenMind.Service.Authentication.Services
                 return new AuthResponseDto { Token = token, UserName = admin.Name, Role = "Admin" };
             }
         }
+
         public async Task<AuthResponseDto> ExternalLoginAsync(string email, string name, string role)
         {
             email = email.Trim().ToLower();
@@ -158,85 +148,50 @@ namespace GreenMind.Service.Authentication.Services
             var userToken = _jwtService.GenerateToken(user.Id, user.Email, "User");
             return new AuthResponseDto { Token = userToken, UserName = user.Name, Role = "User" };
         }
-        // =========================
-        // Forgot Password (Generate Token)
-        // =========================
-        public async Task ForgotPasswordAsync(ForgotPasswordRequestDto dto)
+
+       
+        public async Task<string?> ForgotPasswordAsync(ForgotPasswordRequestDto dto)
         {
             var email = dto.Email.Trim().ToLower();
             var role = dto.Role.Trim();
 
-            if (role != "User" && role != "Admin")
-                throw new AuthHttpException(400, "Invalid role");
+            if (role != "User")
+                throw new AuthHttpException(403, "Forgot password allowed for users only");
 
-            var exists = role == "User"
-                ? await _context.Users.AnyAsync(x => x.Email.ToLower() == email)
-                : await _context.Admins.AnyAsync(x => x.Email.ToLower() == email);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(x => x.Email.ToLower() == email);
 
-            // Security: return same response
-            if (!exists)
-                return;
+            if (user == null)
+                return null;
 
-            var token = GenerateSecureToken(48);
+            var token = Guid.NewGuid().ToString();
 
-            _context.PasswordResetTokens.Add(new PasswordResetToken
-            {
-                Email = email,
-                Role = role,
-                Token = token,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(30),
-                IsUsed = false,
-                CreatedDate = DateTime.UtcNow
-            });
-
+            user.ResetToken = token;
             await _context.SaveChangesAsync();
+
+            return token;
         }
 
-        // =========================
-        // Reset Password
-        // =========================
+   
         public async Task ResetPasswordAsync(ResetPasswordDto dto)
         {
             var role = dto.Role.Trim();
 
-            var prt = await _context.PasswordResetTokens
-                .OrderByDescending(x => x.Id)
-                .FirstOrDefaultAsync(x =>
-                    x.Token == dto.Token &&
-                    x.Role == role &&
-                    !x.IsUsed &&
-                    x.ExpiresAt > DateTime.UtcNow);
+            if (role != "User")
+                throw new AuthHttpException(403, "Reset password allowed for users only");
 
-            if (prt == null)
-                throw new AuthHttpException(400, "Invalid or expired token");
+            var user = await _context.Users
+                .FirstOrDefaultAsync(x => x.ResetToken == dto.Token);
 
-            if (role == "User")
-            {
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == prt.Email);
-                if (user == null) throw new AuthHttpException(400, "User not found");
+            if (user == null)
+                throw new AuthHttpException(400, "Invalid token");
 
-                user.PasswordHash = _hasher.Hash(dto.NewPassword);
-            }
-            else
-            {
-                var admin = await _context.Admins.FirstOrDefaultAsync(x => x.Email.ToLower() == prt.Email);
-                if (admin == null) throw new AuthHttpException(400, "Admin not found");
+            user.PasswordHash = _hasher.Hash(dto.NewPassword);
+            user.ResetToken = null;
 
-                admin.PasswordHash = _hasher.Hash(dto.NewPassword);
-            }
-
-            prt.IsUsed = true;
             await _context.SaveChangesAsync();
         }
-
-        private static string GenerateSecureToken(int bytesLength)
-        {
-            var bytes = RandomNumberGenerator.GetBytes(bytesLength);
-            return Convert.ToBase64String(bytes)
-                .Replace("+", "-").Replace("/", "_").Replace("=", "");
-        }
     }
-
 
     public class AuthHttpException : Exception
     {

@@ -6,7 +6,7 @@ namespace GreenMind.Service.Authentication.Services
 
     public class PasswordHasherService : IPasswordHasherService
     {
-        // تقدر تزودها لو حبيت
+      
         private const int SaltSize = 16;
         private const int KeySize = 32;
         private const int Iterations = 100_000;
@@ -22,7 +22,7 @@ namespace GreenMind.Service.Authentication.Services
                 HashAlgorithmName.SHA256,
                 KeySize);
 
-            // نخزنها بالشكل ده: iterations.salt.hash
+          
             return $"{Iterations}.{Convert.ToBase64String(salt)}.{Convert.ToBase64String(key)}";
         }
 

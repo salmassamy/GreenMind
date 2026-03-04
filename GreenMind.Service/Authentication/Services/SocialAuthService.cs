@@ -14,10 +14,10 @@ namespace GreenMind.Service.Authentication.Services
             _http = http;
         }
 
-        // Google: verify ID token
+      
         public async Task<(string Email, string Name)> VerifyGoogleAsync(string idToken)
         {
-            // Google tokeninfo endpoint
+        
             var url = $"https://oauth2.googleapis.com/tokeninfo?id_token={idToken}";
             var resp = await _http.GetAsync(url);
             if (!resp.IsSuccessStatusCode)
@@ -35,7 +35,7 @@ namespace GreenMind.Service.Authentication.Services
             return (email!, name ?? "User");
         }
 
-        // Facebook: verify Access token by calling /me
+      
         public async Task<(string Email, string Name)> VerifyFacebookAsync(string accessToken)
         {
             // need fields=email,name

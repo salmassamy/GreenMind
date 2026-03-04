@@ -2,8 +2,9 @@
 using GreenMind.Service.Authentication.Services;
 using GreenMind.ServiceAbstraction.Authentication;
 using GreenMind.ServiceAbstraction.Authentication.DTOs;
-using Microsoft.AspNetCore.Mvc;
 using GreenMind.ServiceAbstraction.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 namespace GreenMindAI.Controllers
 {
     [ApiController]
@@ -47,13 +48,19 @@ namespace GreenMindAI.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
         {
             try
             {
-                await _auth.ForgotPasswordAsync(dto);
-                return Ok(new { message = "If the account exists, a reset token was generated." });
+                var token = await _auth.ForgotPasswordAsync(dto);
+
+                return Ok(new
+                {
+                    message = "Reset token generated",
+                    token = token
+                });
             }
             catch (AuthHttpException ex)
             {
@@ -61,13 +68,18 @@ namespace GreenMindAI.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             try
             {
                 await _auth.ResetPasswordAsync(dto);
-                return Ok(new { message = "Password updated successfully." });
+
+                return Ok(new
+                {
+                    message = "Password updated successfully"
+                });
             }
             catch (AuthHttpException ex)
             {

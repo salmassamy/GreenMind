@@ -34,7 +34,7 @@ namespace GreenMind.Service.Authentication.Services
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return _jwtService.GenerateToken(user.Email, "User");
+            return _jwtService.GenerateToken(user.Id.ToString(), user.Email, "User");
         }
 
         public async Task<string> LoginAsync(LoginDto dto)
@@ -47,7 +47,7 @@ namespace GreenMind.Service.Authentication.Services
                     x.Password == dto.Password);
 
             if (user != null)
-                return _jwtService.GenerateToken(user.Email, "User");
+                return _jwtService.GenerateToken(user.Id.ToString(), user.Email, "User");
 
             var admin = await _context.Admins
                 .FirstOrDefaultAsync(x =>
@@ -55,7 +55,7 @@ namespace GreenMind.Service.Authentication.Services
                     x.Password == dto.Password);
 
             if (admin != null)
-                return _jwtService.GenerateToken(admin.Email, "Admin");
+                return _jwtService.GenerateToken(admin.Id.ToString(), admin.Email, "Admin");
 
             throw new Exception("Invalid Email or Password");
         }

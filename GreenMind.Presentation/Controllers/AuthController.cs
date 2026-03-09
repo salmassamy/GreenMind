@@ -50,7 +50,7 @@ namespace GreenMindAI.Controllers
             }
             catch (Exception ex)
             {
-                return Unauthorized(new { message = ex.Message });
+                return StatusCode(401, new { message = ex.Message });
             }
         }
     }

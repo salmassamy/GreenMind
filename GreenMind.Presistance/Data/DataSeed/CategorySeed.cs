@@ -9,13 +9,9 @@ namespace GreenMind.Presistance.Data.DataSeed
         public void Configure(EntityTypeBuilder<Category> builder)
         {
             builder.HasData(
-                new Category
-                {
-                    Id = 1,
-                    Name = "Garden Supplies",
-                   
-                    CreatedDate = new DateTime(2026, 1, 1)
-                }
+                new Category { Id = 1, Name = "Seeds", CreatedDate = new DateTime(2026, 1, 1) },
+                new Category { Id = 2, Name = "Soil", CreatedDate = new DateTime(2026, 1, 1) },
+                new Category { Id = 3, Name = "Tools", CreatedDate = new DateTime(2026, 1, 1) }
             );
         }
     }

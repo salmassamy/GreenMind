@@ -4,6 +4,7 @@ using GreenMind.Presistance.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GreenMind.Presistance.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304062820_InitialCreateWithSeedFix")]
+    partial class InitialCreateWithSeedFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -370,193 +373,122 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(846),
-                            Desc = "Refreshing aroma, vibrant leaves. Perfect for teas, cooking, and home gardens. Easy to grow!",
-                            Img = "/images/mint-seeds.png",
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 135, DateTimeKind.Utc).AddTicks(9905),
+                            Desc = "Refreshing aroma, vibrant leaves. Perfect for teas.",
+                            Img = "/images/mint seeds.png",
                             Name = "Premium Mint Seeds",
                             Price = 50m,
-                            StockQuantity = 0
+                            StockQuantity = 100
                         },
                         new
                         {
                             Id = 2,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2137),
-                            Desc = "Grow coffee at home with premium seeds. Cultivate aromatic beans for your daily brew. Perfect for enthusiasts.",
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1473),
+                            Desc = "Grow coffee at home with premium seeds.",
                             Img = "/images/coffee.png",
                             Name = "Coffee Seeds",
                             Price = 50m,
-                            StockQuantity = 0
+                            StockQuantity = 100
                         },
                         new
                         {
                             Id = 3,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2140),
-                            Desc = "Peppery and aromatic. Fast-growing, easy care. Perfect for pickling, fish, and salads.",
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1476),
+                            Desc = "Peppery and aromatic. Fast-growing, easy care.",
                             Img = "/images/s.png",
                             Name = "Premium Dill Seeds",
                             Price = 50m,
-                            StockQuantity = 0
+                            StockQuantity = 100
                         },
                         new
                         {
                             Id = 4,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2142),
-                            Desc = "Fresh, sweet garden peas. Easy to grow, tender, and delicious pods. Enjoy homegrown peas in 60-70 days.",
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1478),
+                            Desc = "Fresh, sweet garden peas. Easy to grow.",
                             Img = "/images/pea.png",
                             Name = "Premium Pea Seeds",
                             Price = 50m,
-                            StockQuantity = 0
+                            StockQuantity = 100
                         },
                         new
                         {
                             Id = 5,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2143),
-                            Desc = "High yield, excellent taste. Ideal for paddy, disease resistant. Perfect for the Egyptian climate.",
-                            Img = "/images/ri.png",
-                            Name = "Premium Rice Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2144),
-                            Desc = "Crisp, peppery leaves. Ideal for salads and sandwiches. Fast-growing and rich in vitamins.",
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1479),
+                            Desc = "Fast-growing leafy green with a peppery taste.",
                             Img = "/images/arugula.png",
-                            Name = "Premium Arugula Seeds",
+                            Name = "Arugula Seeds",
                             Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2146),
-                            Desc = "Rich in protein and fiber. Ideal for healthy Egyptian cooking. Grow fresh beans for soups and stews.",
-                            Img = "/images/white-bean.png",
-                            Name = "Premium White Bean Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
+                            StockQuantity = 100
                         },
                         new
                         {
                             Id = 8,
                             CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2147),
-                            Desc = "8 Quarts formula. Specialized for seed germination and cuttings. Approved for organic growing.",
-                            Img = "/images/organic-seed.png",
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1480),
+                            Desc = "Specialized for seed germination.",
+                            Img = "/images/organic seed.png",
                             Name = "Organic Seed Starting",
                             Price = 100m,
-                            StockQuantity = 0
+                            StockQuantity = 50
                         },
                         new
                         {
                             Id = 9,
                             CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2148),
-                            Desc = "Available in .75 or 1.5 cubic feet. Formulated for herbs, vegetables, and indoor plants.",
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1482),
+                            Desc = "Formulated for herbs and vegetables.",
                             Img = "/images/P.png",
                             Name = "Potting Mix",
                             Price = 100m,
-                            StockQuantity = 0
+                            StockQuantity = 50
                         },
                         new
                         {
                             Id = 10,
                             CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2149),
-                            Desc = "1 Cubic foot. Formulated for flower beds, vegetable gardens, trees, and shrubs. For in-ground use",
-                            Img = "/images/garden-soil.png",
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1483),
+                            Desc = "Ideal for flower beds and vegetable gardens.",
+                            Img = "/images/garden soil.png",
                             Name = "Garden Soil",
                             Price = 100m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2151),
-                            Desc = "Enriched with Humus. Available in .75 cubic feet bags for nutrient-rich soil.",
-                            Img = "/images/composted-manure.png",
-                            Name = "Composted Manure",
-                            Price = 100m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2152),
-                            Desc = "1 Cubic foot. Ideal for container gardens, hanging baskets, and window boxes.",
-                            Img = "/images/potting-soil.png",
-                            Name = "Potting Soil",
-                            Price = 100m,
-                            StockQuantity = 0
+                            StockQuantity = 50
                         },
                         new
                         {
                             Id = 13,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2154),
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1485),
+                            Desc = "Durable fork for soil preparation.",
                             Img = "/images/Rectangle.png",
                             Name = "Digging Fork",
                             Price = 200m,
-                            StockQuantity = 0
+                            StockQuantity = 20
                         },
                         new
                         {
                             Id = 14,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2155),
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1486),
+                            Desc = "High-quality shovel for gardening.",
                             Img = "/images/shovel.png",
                             Name = "Shovel",
                             Price = 200m,
-                            StockQuantity = 0
+                            StockQuantity = 20
                         },
                         new
                         {
                             Id = 15,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2156),
+                            CreatedDate = new DateTime(2026, 3, 4, 6, 28, 20, 136, DateTimeKind.Utc).AddTicks(1487),
+                            Desc = "Perfect for moving loose materials.",
                             Img = "/images/T.png",
                             Name = "Square-Point Shovel",
                             Price = 200m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 16,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2157),
-                            Img = "/images/watering.png",
-                            Name = "Watering Can",
-                            Price = 200m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 17,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2158),
-                            Img = "/images/Hand.png",
-                            Name = "Hand Cultivator",
-                            Price = 200m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 18,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2160),
-                            Img = "/images/point-Shovel.png",
-                            Name = "Round-Point Shovel",
-                            Price = 200m,
-                            StockQuantity = 0
+                            StockQuantity = 20
                         });
                 });
 

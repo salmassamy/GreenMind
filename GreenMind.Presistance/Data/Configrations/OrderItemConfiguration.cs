@@ -8,7 +8,6 @@ namespace GreenMind.Presistance.Data.Configrations
     {
         public void Configure(EntityTypeBuilder<OrderItem> builder)
         {
-            // حل تحذير الـ UnitPrice
             builder.Property(oi => oi.UnitPrice).HasColumnType("decimal(18,2)");
         }
     }

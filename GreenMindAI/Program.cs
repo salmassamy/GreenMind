@@ -1,15 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GreenMind.Domain.Contracts;
 using GreenMind.Presistance.Data.DbContexts; 
+using GreenMind.Presistance.Repositories;
+using GreenMind.Service;
 using GreenMind.Service.Authentication.Services;
+using GreenMind.Service.Services.ShoppingCart;
 using GreenMind.ServiceAbstraction.Authentication;
+using GreenMind.ServiceAbstraction.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using GreenMind.ServiceAbstraction.Interfaces;
-using GreenMind.Service.Services.ShoppingCart;
 
 namespace GreenMindAI
 {
@@ -35,7 +38,9 @@ namespace GreenMindAI
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // السطر ده بس اللي هيتغير
             builder.Services.AddControllers()
+                .AddApplicationPart(typeof(GreenMind.Presentation.Controllers.OrderController).Assembly) // السطر ده اللي ناقصك
                 .ConfigureApiBehaviorOptions(options =>
                 {
                     options.InvalidModelStateResponseFactory = context =>
@@ -144,6 +149,9 @@ namespace GreenMindAI
             // Shopping Cart Services
 
             builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
             builder.Services.AddAuthorization();
 
@@ -213,6 +221,8 @@ namespace GreenMindAI
             app.UseAuthentication();
             app.UseAuthorization();
 
+
+            app.UseStaticFiles();
             app.MapControllers();
 
             app.Run();

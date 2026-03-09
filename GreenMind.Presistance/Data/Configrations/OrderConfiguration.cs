@@ -8,8 +8,26 @@ namespace GreenMind.Presistance.Data.Configrations
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
-            // حل تحذير الـ TotalAmount
-            builder.Property(o => o.TotalAmount).HasColumnType("decimal(18,2)");
+            builder.HasOne(o => o.Address)
+                   .WithMany()
+                   .HasForeignKey(o => o.AddressId)
+                   .OnDelete(DeleteBehavior.NoAction);
+
+            
+            builder.Property(o => o.SubTotal)
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(o => o.DiscountAmount)
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(o => o.ShippingCost)
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(o => o.TaxAmount)
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(o => o.TotalAmount)
+                   .HasColumnType("decimal(18,2)");
         }
     }
 }

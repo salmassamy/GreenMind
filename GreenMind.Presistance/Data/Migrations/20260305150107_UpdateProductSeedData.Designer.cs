@@ -4,6 +4,7 @@ using GreenMind.Presistance.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GreenMind.Presistance.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260305150107_UpdateProductSeedData")]
+    partial class UpdateProductSeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -370,9 +373,9 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(846),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(5240),
                             Desc = "Refreshing aroma, vibrant leaves. Perfect for teas, cooking, and home gardens. Easy to grow!",
-                            Img = "/images/mint-seeds.png",
+                            Img = "/images/mint seeds.png",
                             Name = "Premium Mint Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -381,7 +384,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 2,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2137),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6569),
                             Desc = "Grow coffee at home with premium seeds. Cultivate aromatic beans for your daily brew. Perfect for enthusiasts.",
                             Img = "/images/coffee.png",
                             Name = "Coffee Seeds",
@@ -392,7 +395,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 3,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2140),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6573),
                             Desc = "Peppery and aromatic. Fast-growing, easy care. Perfect for pickling, fish, and salads.",
                             Img = "/images/s.png",
                             Name = "Premium Dill Seeds",
@@ -403,7 +406,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 4,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2142),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6574),
                             Desc = "Fresh, sweet garden peas. Easy to grow, tender, and delicious pods. Enjoy homegrown peas in 60-70 days.",
                             Img = "/images/pea.png",
                             Name = "Premium Pea Seeds",
@@ -414,7 +417,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 5,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2143),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6575),
                             Desc = "High yield, excellent taste. Ideal for paddy, disease resistant. Perfect for the Egyptian climate.",
                             Img = "/images/ri.png",
                             Name = "Premium Rice Seeds",
@@ -425,7 +428,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 6,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2144),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6577),
                             Desc = "Crisp, peppery leaves. Ideal for salads and sandwiches. Fast-growing and rich in vitamins.",
                             Img = "/images/arugula.png",
                             Name = "Premium Arugula Seeds",
@@ -436,9 +439,9 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 7,
                             CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2146),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6578),
                             Desc = "Rich in protein and fiber. Ideal for healthy Egyptian cooking. Grow fresh beans for soups and stews.",
-                            Img = "/images/white-bean.png",
+                            Img = "/images/white bean.png",
                             Name = "Premium White Bean Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -447,9 +450,9 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 8,
                             CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2147),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6580),
                             Desc = "8 Quarts formula. Specialized for seed germination and cuttings. Approved for organic growing.",
-                            Img = "/images/organic-seed.png",
+                            Img = "/images/organic seed.png",
                             Name = "Organic Seed Starting",
                             Price = 100m,
                             StockQuantity = 0
@@ -458,7 +461,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 9,
                             CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2148),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6581),
                             Desc = "Available in .75 or 1.5 cubic feet. Formulated for herbs, vegetables, and indoor plants.",
                             Img = "/images/P.png",
                             Name = "Potting Mix",
@@ -469,9 +472,9 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 10,
                             CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2149),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6582),
                             Desc = "1 Cubic foot. Formulated for flower beds, vegetable gardens, trees, and shrubs. For in-ground use",
-                            Img = "/images/garden-soil.png",
+                            Img = "/images/garden soil.png",
                             Name = "Garden Soil",
                             Price = 100m,
                             StockQuantity = 0
@@ -480,9 +483,9 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 11,
                             CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2151),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6584),
                             Desc = "Enriched with Humus. Available in .75 cubic feet bags for nutrient-rich soil.",
-                            Img = "/images/composted-manure.png",
+                            Img = "/images/composted manure.png",
                             Name = "Composted Manure",
                             Price = 100m,
                             StockQuantity = 0
@@ -491,9 +494,9 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 12,
                             CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2152),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6585),
                             Desc = "1 Cubic foot. Ideal for container gardens, hanging baskets, and window boxes.",
-                            Img = "/images/potting-soil.png",
+                            Img = "/images/potting soil.png",
                             Name = "Potting Soil",
                             Price = 100m,
                             StockQuantity = 0
@@ -502,7 +505,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 13,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2154),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6587),
                             Img = "/images/Rectangle.png",
                             Name = "Digging Fork",
                             Price = 200m,
@@ -512,7 +515,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 14,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2155),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6588),
                             Img = "/images/shovel.png",
                             Name = "Shovel",
                             Price = 200m,
@@ -522,7 +525,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 15,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2156),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6589),
                             Img = "/images/T.png",
                             Name = "Square-Point Shovel",
                             Price = 200m,
@@ -532,7 +535,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 16,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2157),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6590),
                             Img = "/images/watering.png",
                             Name = "Watering Can",
                             Price = 200m,
@@ -542,7 +545,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 17,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2158),
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6591),
                             Img = "/images/Hand.png",
                             Name = "Hand Cultivator",
                             Price = 200m,
@@ -552,8 +555,8 @@ namespace GreenMind.Presistance.Data.Migrations
                         {
                             Id = 18,
                             CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2160),
-                            Img = "/images/point-Shovel.png",
+                            CreatedDate = new DateTime(2026, 3, 5, 15, 1, 7, 100, DateTimeKind.Utc).AddTicks(6593),
+                            Img = "/images/point Shovel.png",
                             Name = "Round-Point Shovel",
                             Price = 200m,
                             StockQuantity = 0

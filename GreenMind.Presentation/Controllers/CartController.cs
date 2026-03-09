@@ -1,5 +1,6 @@
 ﻿using GreenMind.ServiceAbstraction.DTOs; // تأكدي من إضافة ده
 using GreenMind.ServiceAbstraction.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
@@ -31,7 +32,7 @@ namespace GreenMindAI.Controllers
                     Id = i.ProductId,
                     Name = i.Product.Name,
                     Price = i.Product.Price,
-                    Img = i.Product.ImageURL,
+                    Img = i.Product.Img,
                     Quantity = i.Quantity
                 }).ToList(),
 
@@ -45,16 +46,25 @@ namespace GreenMindAI.Controllers
 
             return Ok(response);
         }
-        // 2. إضافة منتج للسلة 
+       
         [HttpPost("add")]
-        public async Task<IActionResult> AddToCart(int userId, int productId, int quantity)
+        [Authorize] 
+        public async Task<IActionResult> AddToCart(int productId, int quantity)
         {
-            // تأكدي إن الـ productId رقم 1 أو 2 عشان تتجنبي الـ Foreign Key Error
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
             await _cartService.AddItemToCartAsync(userId, productId, quantity);
-            return Ok(new { message = "Product added successfully" });
+
+            return Ok(new { message = "Product added successfully to your account's cart!" });
         }
 
-        // باقي الـ Methods (Update, Remove, Clear) زي ما هي تمام
         [HttpPut("update-quantity")]
         public async Task<IActionResult> UpdateQuantity(int cartItemId, int newQuantity)
         {
@@ -69,11 +79,22 @@ namespace GreenMindAI.Controllers
             return Ok(new { message = "Item removed" });
         }
 
-        [HttpDelete("clear/{userId}")]
-        public async Task<IActionResult> ClearCart(int userId)
+        [HttpDelete("clear")] 
+        [Authorize]
+        public async Task<IActionResult> ClearCart()
         {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
             await _cartService.ClearCartAsync(userId);
-            return Ok(new { message = "Cart cleared" });
+
+            return Ok(new { message = "Cart cleared successfully" });
         }
     }
 }

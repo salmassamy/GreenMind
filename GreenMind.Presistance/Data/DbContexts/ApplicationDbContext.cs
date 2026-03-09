@@ -27,10 +27,17 @@ namespace GreenMind.Presistance.Data.DbContexts
         public DbSet<Admin> Admins { get; set; }
         public DbSet<ChatLog> ChatLogs { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+         
+            optionsBuilder.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // السطر ده مهم جداً عشان يلقط أي إعدادات خاصة (Fluent API) هنعملها قدام
+         
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
     }

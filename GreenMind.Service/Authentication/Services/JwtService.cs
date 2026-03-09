@@ -15,13 +15,14 @@ namespace GreenMind.Service.Authentication.Services
             _config = config;
         }
 
-        public string GenerateToken(string email, string role)
+        public string GenerateToken(string userId, string email, string role)
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.Role, role)
-            };
+        new Claim(ClaimTypes.NameIdentifier, userId), // السطر ده هو اللي الـ OrderController محتاجه
+        new Claim(ClaimTypes.Email, email),
+        new Claim(ClaimTypes.Role, role)
+    };
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

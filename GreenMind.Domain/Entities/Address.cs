@@ -10,6 +10,8 @@ namespace GreenMind.Domain.Entities
     {
         public string City { get; set; } = null!;
         public string Street { get; set; } = null!;
+        public string Phone { get; set; } = null!; 
+        public string? Notes { get; set; }
         public int UserId { get; set; }
         public User User { get; set; } = null!;
     }

@@ -38,7 +38,6 @@ namespace GreenMindAI
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // السطر ده بس اللي هيتغير
             builder.Services.AddControllers()
                 .AddApplicationPart(typeof(GreenMind.Presentation.Controllers.OrderController).Assembly) // السطر ده اللي ناقصك
                 .ConfigureApiBehaviorOptions(options =>
@@ -152,6 +151,7 @@ namespace GreenMindAI
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddHttpClient();
 
             builder.Services.AddAuthorization();
 

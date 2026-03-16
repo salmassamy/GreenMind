@@ -63,7 +63,7 @@ namespace GreenMind.Presentation.Controllers
             {
                 // 2. هنا بنرجع رد وهمي (Mock Data) عشان الفرونت إند يكمل شغله
                 // لما تيم الـ AI يدوكي الرابط، هتشيلي الـ Comment وتستخدمي الـ _httpClient
-                var mockResult = new { recommendedFertilizer = "Urea" }; // [cite: 69]
+                var mockResult = new { recommendedFertilizer = "Urea" }; 
 
                 return Ok(mockResult);
             }

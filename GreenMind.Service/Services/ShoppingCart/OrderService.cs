@@ -38,14 +38,27 @@ namespace GreenMind.Service.Services.ShoppingCart
         }
         public async Task<int> PlaceOrderAsync(int userId, CheckoutRequestDto checkoutDto)
         {
-            var cart = await _context.Carts
-                .Include(c => c.Items)
-                .ThenInclude(ci => ci.Product)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+            //var cart = await _context.Carts
+            //    .Include(c => c.Items)
+            //    .ThenInclude(ci => ci.Product)
+            //    .FirstOrDefaultAsync(c => c.UserId == userId);
 
-            if (cart == null || !cart.Items.Any())
+            //if (cart == null || !cart.Items.Any())
+            //    throw new Exception("The basket is empty, add the first products!");
+
+            // حطي السطور دي مكان اللي مسحتيهم:
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart == null)
+                throw new Exception("Cart not found");
+
+            cart.Items = await _context.CartItems
+                .Where(ci => ci.CartId == cart.Id)
+                .Include(ci => ci.Product)
+                .ToListAsync();
+
+            if (cart.Items == null || !cart.Items.Any())
                 throw new Exception("The basket is empty, add the first products!");
-
             var subTotal = cart.Items.Sum(item => item.Quantity * item.Product.Price);
 
             var discount = checkoutDto.CartDetails.Discount;

@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.73.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\GreenMind.Domain\GreenMind.Domain.csproj" />
     <ProjectReference Include="..\GreenMind.Presistance\GreenMind.Presistance.csproj" />
     <ProjectReference Include="..\GreenMind.ServiceAbstraction\GreenMind.ServiceAbstraction.csproj" />

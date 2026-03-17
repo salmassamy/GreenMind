@@ -7,5 +7,8 @@ namespace GreenMind.ServiceAbstraction.Authentication
         Task<string> RegisterUserAsync(RegisterUserDto dto);
         
         Task<string> LoginAsync(LoginDto dto);
+        Task ResetPasswordAsync(ResetPasswordDto dto);
+
+        Task<AuthResponseDto> ExternalLoginAsync(string name, string role);
     }
 }

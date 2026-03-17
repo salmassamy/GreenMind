@@ -1,5 +1,5 @@
 ﻿using GreenMind.Domain.Contracts;
-using GreenMind.Presistance.Data.DbContexts; 
+using GreenMind.Presistance.Data.DbContexts;
 using GreenMind.Presistance.Repositories;
 using GreenMind.Service;
 using GreenMind.Service.Authentication.Services;
@@ -22,24 +22,22 @@ namespace GreenMindAI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
-            // CORS Configuration
-
+            // 1. CORS Configuration
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("MyCorsPolicy", policy =>
                 {
-                    policy.AllowAnyHeader()   
-                          .AllowAnyMethod()   
-                          .AllowAnyOrigin();  
+                    policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
                 });
             });
-            //==========================
+
+            // 2. Database Context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // 3. Controllers Configuration
             builder.Services.AddControllers()
-                .AddApplicationPart(typeof(GreenMind.Presentation.Controllers.OrderController).Assembly) // السطر ده اللي ناقصك
+                .AddApplicationPart(typeof(GreenMind.Presentation.Controllers.OrderController).Assembly)
                 .ConfigureApiBehaviorOptions(options =>
                 {
                     options.InvalidModelStateResponseFactory = context =>
@@ -48,16 +46,11 @@ namespace GreenMindAI
                             .Where(e => e.Value!.Errors.Count > 0)
                             .Select(e => e.Value!.Errors.First().ErrorMessage)
                             .ToList();
-
-                        var response = new
-                        {
-                            message = errors.First()
-                        };
-
-                        return new BadRequestObjectResult(response);
+                        return new BadRequestObjectResult(new { message = errors.First() });
                     };
                 });
 
+            // 4. Swagger with JWT Support
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
@@ -70,26 +63,25 @@ namespace GreenMindAI
                     In = ParameterLocation.Header,
                     Description = "Enter JWT Token like: Bearer {your token}"
                 });
-
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
+                        new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
                         new string[] {}
                     }
                 });
             });
 
+            // 5. Dependency Injection (Authentication & Business Services)
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<JwtService>();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddHttpClient();
 
+            // 6. Authentication & JWT Configuration
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -105,10 +97,8 @@ namespace GreenMindAI
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
                 };
-
                 options.Events = new JwtBearerEvents
                 {
                     OnChallenge = async context =>
@@ -116,97 +106,17 @@ namespace GreenMindAI
                         context.HandleResponse();
                         context.Response.StatusCode = 401;
                         context.Response.ContentType = "application/json";
-
-                        var result = JsonSerializer.Serialize(new
-                        {
-                            message = "Unauthorized: Token is missing or invalid"
-                        });
-
-                        await context.Response.WriteAsync(result);
-                    },
-
-                    OnForbidden = async context =>
-                    {
-                        context.Response.StatusCode = 403;
-                        context.Response.ContentType = "application/json";
-
-                        var result = JsonSerializer.Serialize(new
-                        {
-                            message = "Forbidden: You do not have access"
-                        });
-
-                        await context.Response.WriteAsync(result);
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(new { message = "Unauthorized: Token is missing or invalid" }));
                     }
                 };
             });
 
-            //builder.Services.AddAuthorization();
-
-            //builder.Services.AddScoped<IAuthService, AuthService>();
-            //builder.Services.AddScoped<JwtService>();
-
-            // Shopping Cart Services
-
-            builder.Services.AddScoped<ICartService, CartService>();
-            builder.Services.AddScoped<IOrderService, OrderService>();
-            builder.Services.AddScoped<IProductService, ProductService>();
-            builder.Services.AddScoped<IProductRepository, ProductRepository>();
-            builder.Services.AddHttpClient();
-
             builder.Services.AddAuthorization();
 
+            // =========================
+            // Middleware Pipeline
+            // =========================
             var app = builder.Build();
-
-            //builder.Services.AddAuthentication(options =>
-            //{
-            //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //})
-            //.AddJwtBearer(options =>
-            //{
-            //    options.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuer = true,
-            //        ValidateAudience = true,
-            //        ValidateLifetime = true,
-            //        ValidateIssuerSigningKey = true,
-            //        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            //        ValidAudience = builder.Configuration["Jwt:Audience"],
-            //        IssuerSigningKey = new SymmetricSecurityKey(
-            //            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-            //    };
-
-            //    options.Events = new JwtBearerEvents
-            //    {
-            //        OnChallenge = async context =>
-            //        {
-            //            context.HandleResponse();
-            //            context.Response.StatusCode = 401;
-            //            context.Response.ContentType = "application/json";
-
-            //            var result = JsonSerializer.Serialize(new
-            //            {
-            //                message = "Unauthorized: Token is missing or invalid"
-            //            });
-
-            //            await context.Response.WriteAsync(result);
-            //        },
-
-            //        OnForbidden = async context =>
-            //        {
-            //            context.Response.StatusCode = 403;
-            //            context.Response.ContentType = "application/json";
-
-            //            var result = JsonSerializer.Serialize(new
-            //            {
-            //                message = "Forbidden: You do not have access"
-            //            });
-
-            //            await context.Response.WriteAsync(result);
-      //  }
-          //      };
-          //  });
-
 
             if (app.Environment.IsDevelopment())
             {
@@ -215,18 +125,15 @@ namespace GreenMindAI
             }
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
             app.UseCors("MyCorsPolicy");
 
-            app.UseAuthentication();
+            app.UseAuthentication(); // لازم قبل Authorization
             app.UseAuthorization();
 
-
-            app.UseStaticFiles();
             app.MapControllers();
 
             app.Run();
-
         }
     }
 }

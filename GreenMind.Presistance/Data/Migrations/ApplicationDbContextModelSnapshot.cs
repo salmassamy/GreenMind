@@ -611,6 +611,9 @@ namespace GreenMind.Presistance.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -619,6 +622,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                   
                     b.HasKey("Id");
 
                     b.ToTable("Users");

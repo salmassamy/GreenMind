@@ -29,9 +29,9 @@ namespace GreenMindAI
             {
                 options.AddPolicy("MyCorsPolicy", policy =>
                 {
-                    policy.AllowAnyHeader()   // يسمح بأي Header (زي الـ Token)
-                          .AllowAnyMethod()   // يسمح بكل العمليات (GET, POST, etc.)
-                          .AllowAnyOrigin();  // يسمح لأي حد يكلم الـ API (مناسب جداً وقت التطوير)
+                    policy.AllowAnyHeader()   
+                          .AllowAnyMethod()   
+                          .AllowAnyOrigin();  
                 });
             });
             //==========================

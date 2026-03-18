@@ -4,16 +4,19 @@ using GreenMind.Presistance.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace GreenMind.Presistance.Data.Migrations
+namespace GreenMind.Presistance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260316214358_UpdateUserEntity")]
+    partial class UpdateUserEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,13 +39,6 @@ namespace GreenMind.Presistance.Data.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Street")
                         .IsRequired()
@@ -84,37 +80,6 @@ namespace GreenMind.Presistance.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Admins");
-                });
-
-            modelBuilder.Entity("GreenMind.Domain.Entities.Article", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsFeatured")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Articles");
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Cart", b =>
@@ -186,26 +151,6 @@ namespace GreenMind.Presistance.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Seeds"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Soil"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Tools"
-                        });
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.ChatLog", b =>
@@ -244,41 +189,15 @@ namespace GreenMind.Presistance.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AddressId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<decimal>("DiscountAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("ShippingCost")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("SubTotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TaxAmount")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -287,8 +206,6 @@ namespace GreenMind.Presistance.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
 
                     b.HasIndex("UserId");
 
@@ -372,17 +289,17 @@ namespace GreenMind.Presistance.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Desc")
+                    b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Img")
+                    b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -395,200 +312,6 @@ namespace GreenMind.Presistance.Data.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(846),
-                            Desc = "Refreshing aroma, vibrant leaves. Perfect for teas, cooking, and home gardens. Easy to grow!",
-                            Img = "/images/mint-seeds.png",
-                            Name = "Premium Mint Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2137),
-                            Desc = "Grow coffee at home with premium seeds. Cultivate aromatic beans for your daily brew. Perfect for enthusiasts.",
-                            Img = "/images/coffee.png",
-                            Name = "Coffee Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2140),
-                            Desc = "Peppery and aromatic. Fast-growing, easy care. Perfect for pickling, fish, and salads.",
-                            Img = "/images/s.png",
-                            Name = "Premium Dill Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2142),
-                            Desc = "Fresh, sweet garden peas. Easy to grow, tender, and delicious pods. Enjoy homegrown peas in 60-70 days.",
-                            Img = "/images/pea.png",
-                            Name = "Premium Pea Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2143),
-                            Desc = "High yield, excellent taste. Ideal for paddy, disease resistant. Perfect for the Egyptian climate.",
-                            Img = "/images/ri.png",
-                            Name = "Premium Rice Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2144),
-                            Desc = "Crisp, peppery leaves. Ideal for salads and sandwiches. Fast-growing and rich in vitamins.",
-                            Img = "/images/arugula.png",
-                            Name = "Premium Arugula Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CategoryId = 1,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2146),
-                            Desc = "Rich in protein and fiber. Ideal for healthy Egyptian cooking. Grow fresh beans for soups and stews.",
-                            Img = "/images/white-bean.png",
-                            Name = "Premium White Bean Seeds",
-                            Price = 50m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2147),
-                            Desc = "8 Quarts formula. Specialized for seed germination and cuttings. Approved for organic growing.",
-                            Img = "/images/organic-seed.png",
-                            Name = "Organic Seed Starting",
-                            Price = 100m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2148),
-                            Desc = "Available in .75 or 1.5 cubic feet. Formulated for herbs, vegetables, and indoor plants.",
-                            Img = "/images/P.png",
-                            Name = "Potting Mix",
-                            Price = 100m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2149),
-                            Desc = "1 Cubic foot. Formulated for flower beds, vegetable gardens, trees, and shrubs. For in-ground use",
-                            Img = "/images/garden-soil.png",
-                            Name = "Garden Soil",
-                            Price = 100m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2151),
-                            Desc = "Enriched with Humus. Available in .75 cubic feet bags for nutrient-rich soil.",
-                            Img = "/images/composted-manure.png",
-                            Name = "Composted Manure",
-                            Price = 100m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CategoryId = 2,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2152),
-                            Desc = "1 Cubic foot. Ideal for container gardens, hanging baskets, and window boxes.",
-                            Img = "/images/potting-soil.png",
-                            Name = "Potting Soil",
-                            Price = 100m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 13,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2154),
-                            Img = "/images/Rectangle.png",
-                            Name = "Digging Fork",
-                            Price = 200m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 14,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2155),
-                            Img = "/images/shovel.png",
-                            Name = "Shovel",
-                            Price = 200m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 15,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2156),
-                            Img = "/images/T.png",
-                            Name = "Square-Point Shovel",
-                            Price = 200m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 16,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2157),
-                            Img = "/images/watering.png",
-                            Name = "Watering Can",
-                            Price = 200m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 17,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2158),
-                            Img = "/images/Hand.png",
-                            Name = "Hand Cultivator",
-                            Price = 200m,
-                            StockQuantity = 0
-                        },
-                        new
-                        {
-                            Id = 18,
-                            CategoryId = 3,
-                            CreatedDate = new DateTime(2026, 3, 9, 1, 11, 39, 609, DateTimeKind.Utc).AddTicks(2160),
-                            Img = "/images/point-Shovel.png",
-                            Name = "Round-Point Shovel",
-                            Price = 200m,
-                            StockQuantity = 0
-                        });
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Review", b =>
@@ -649,7 +372,7 @@ namespace GreenMind.Presistance.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -662,33 +385,6 @@ namespace GreenMind.Presistance.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("GreenMind.Domain.Entities.UserActivityLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ActionType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("EndedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserActivityLogs");
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Address", b =>
@@ -745,19 +441,11 @@ namespace GreenMind.Presistance.Data.Migrations
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("GreenMind.Domain.Entities.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("GreenMind.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Address");
 
                     b.Navigation("User");
                 });

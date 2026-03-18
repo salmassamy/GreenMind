@@ -33,7 +33,7 @@ namespace GreenMind.Service.Authentication.Services
                 Credentials = new NetworkCredential(fromEmail, appPassword)
             };
 
-            var msg = new MailMessage(fromEmail, toEmail, subject, body);
+            var msg = new MailMessage(fromEmail!, toEmail, subject, body);
             await smtp.SendMailAsync(msg);
         }
     }

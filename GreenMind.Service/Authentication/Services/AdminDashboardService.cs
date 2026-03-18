@@ -22,10 +22,10 @@ namespace GreenMind.Service.Services
             var entity = new Product
             {
                 Name = dto.Name.Trim(),
-                Description = dto.Description.Trim(),
+                Desc = dto.Description.Trim(),
                 CategoryId = dto.CategoryId,
                 Price = dto.Price,
-                ImageURL = dto.Image.Trim()
+                Img = dto.Image.Trim()
             };
 
             _context.Products.Add(entity);
@@ -35,8 +35,8 @@ namespace GreenMind.Service.Services
             {
                 Id = entity.Id.ToString(),
                 Name = entity.Name,
-                Description = entity.Description,
-                Image = entity.ImageURL,
+                Description = entity.Desc,
+                Image = entity.Img,
                 Category = entity.Category != null ? entity.Category.Name : "",
                 Price = $"{entity.Price}$"
             };
@@ -54,10 +54,10 @@ namespace GreenMind.Service.Services
                 throw new Exception("Product not found");
 
             entity.Name = dto.Name.Trim();
-            entity.Description = dto.Description.Trim();
+            entity.Desc = dto.Description.Trim();
             entity.CategoryId = dto.CategoryId;
             entity.Price = dto.Price;
-            entity.ImageURL = dto.Image.Trim();
+            entity.Img = dto.Image.Trim();
 
             await _context.SaveChangesAsync();
 
@@ -65,8 +65,8 @@ namespace GreenMind.Service.Services
             {
                 Id = entity.Id.ToString(),
                 Name = entity.Name,
-                Description = entity.Description,
-                Image = entity.ImageURL,
+                Description = entity.Desc,
+                Image = entity.Img,
                 Category = entity.Category != null ? entity.Category.Name : "",
                 Price = $"{entity.Price}$"
             };

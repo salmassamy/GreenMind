@@ -1,6 +1,10 @@
-﻿using GreenMind.Presistance.Data.DbContexts;
+﻿using GreenMind.Domain.Contracts;
+using GreenMind.Presistance.Data.DbContexts;
+using GreenMind.Presistance.Repositories;
+using GreenMind.Service;
 using GreenMind.Service.Authentication.Services;
 using GreenMind.Service.Services;
+using GreenMind.Service.Services.ShoppingCart;
 using GreenMind.ServiceAbstraction.Authentication;
 using GreenMind.ServiceAbstraction.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -65,6 +69,11 @@ builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 // JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrEmpty(jwtKey))

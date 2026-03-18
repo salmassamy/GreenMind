@@ -1,8 +1,9 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Identity;
 using GreenMind.ServiceAbstraction.DTOs;
 using GreenMind.ServiceAbstraction.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace GreenMindAI.Controllers
 {

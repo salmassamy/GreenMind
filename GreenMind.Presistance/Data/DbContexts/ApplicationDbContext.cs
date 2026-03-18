@@ -36,5 +36,11 @@ namespace GreenMind.Presistance.Data.DbContexts
             // السطر ده مهم جداً عشان يلقط أي إعدادات خاصة (Fluent API) هنعملها قدام
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            // السطر ده هيخلي الـ EF يطنش مشكلة الوقت المتغير ويحدث الداتابيز
+            optionsBuilder.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        }
     }
 }

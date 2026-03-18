@@ -54,17 +54,14 @@ namespace GreenMind.Presentation.Controllers
         [HttpPost("recommend-fertilizer")]
         public async Task<IActionResult> GetFertilizerRecommendation([FromBody] FertilizerRecommendationDto input)
         {
-            // 1. التحقق من صحة البيانات (الـ Validation اللي حطيتيه في الـ DTO هيشتغل أوتوماتيك)
             if (!ModelState.IsValid)
-
                 return BadRequest(ModelState);
 
             try
             {
-                // 2. هنا بنرجع رد وهمي (Mock Data) عشان الفرونت إند يكمل شغله
-                // لما تيم الـ AI يدوكي الرابط، هتشيلي الـ Comment وتستخدمي الـ _httpClient
-                var mockResult = new { recommendedFertilizer = "Urea" }; 
+                await Task.Yield();
 
+                var mockResult = new { recommendedFertilizer = "Urea" };
                 return Ok(mockResult);
             }
             catch (Exception ex)

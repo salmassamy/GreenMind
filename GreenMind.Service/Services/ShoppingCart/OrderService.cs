@@ -46,7 +46,7 @@ namespace GreenMind.Service.Services.ShoppingCart
             //if (cart == null || !cart.Items.Any())
             //    throw new Exception("The basket is empty, add the first products!");
 
-            // حطي السطور دي مكان اللي مسحتيهم:
+           
             var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (cart == null)
@@ -69,24 +69,24 @@ namespace GreenMind.Service.Services.ShoppingCart
 
             var address = new Address
             {
-                City = checkoutDto.CustomerDetails.City,    // عدليها كده
-                Street = checkoutDto.CustomerDetails.Address, // عدليها كده
-                Phone = checkoutDto.CustomerDetails.Phone,    // عدليها كده
-                Notes = checkoutDto.CustomerDetails.Notes,    // عدليها كده
+                City = checkoutDto.CustomerDetails.City,    
+                Street = checkoutDto.CustomerDetails.Address, 
+                Phone = checkoutDto.CustomerDetails.Phone,    
+                Notes = checkoutDto.CustomerDetails.Notes,    
                 UserId = userId
             };
             _context.Addresses.Add(address);
             var order = new Order
             {
-                UserId = userId, // ضيفي دي
-                OrderDate = DateTime.UtcNow, // ضيفي دي
-                Status = "Pending", // ضيفي دي
-                SubTotal = checkoutDto.CartDetails.SubTotal,
-                DiscountAmount = checkoutDto.CartDetails.Discount,
-                ShippingCost = checkoutDto.CartDetails.Shipping,
-                TaxAmount = checkoutDto.CartDetails.Taxes,
-                TotalAmount = checkoutDto.CartDetails.Total,
-                PaymentMethod = checkoutDto.PaymentMethod, // ضيفي دي
+                UserId = userId,
+                OrderDate = DateTime.UtcNow,
+                Status = "Pending",
+                SubTotal = subTotal,            
+                DiscountAmount = discount,     
+                ShippingCost = shipping,      
+                TaxAmount = taxes,           
+                TotalAmount = total,            
+                PaymentMethod = checkoutDto.PaymentMethod,
                 Phone = checkoutDto.CustomerDetails.Phone,
                 Notes = checkoutDto.CustomerDetails.Notes
             };

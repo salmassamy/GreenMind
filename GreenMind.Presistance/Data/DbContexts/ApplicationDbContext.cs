@@ -26,7 +26,10 @@ namespace GreenMind.Presistance.Data.DbContexts
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<ChatLog> ChatLogs { get; set; }
-
+        public DbSet<Article> Articles { get; set; }
+      
+        public DbSet<UserActivityLog> UserActivityLogs { get; set; }
+  
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

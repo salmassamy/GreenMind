@@ -141,19 +141,17 @@ namespace GreenMind.Service.Authentication.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
-            var key = dto.Email.Trim();
+            var key = dto.Email?.Trim().ToLower();
             var role = NormalizeRole(dto.Role);
 
+            if (string.IsNullOrWhiteSpace(key))
+                throw new AuthHttpException(400, "Email/UserName is required");
+
+            // ================= USER =================
             if (role.Equals("User", StringComparison.OrdinalIgnoreCase))
             {
-                var adminMismatch = await _context.Admins
-                    .AnyAsync(a => a.Email.ToLower() == key.ToLower() || a.Name == key);
-
-                if (adminMismatch)
-                    throw new AuthHttpException(403, "Forbidden: role mismatch");
-
                 var user = await _context.Users.FirstOrDefaultAsync(u =>
-                    u.Email.ToLower() == key.ToLower() || u.Name == key);
+                    u.Email.ToLower() == key || u.Name.ToLower() == key);
 
                 if (user == null)
                     throw new AuthHttpException(401, "Invalid Email/UserName or Password");
@@ -161,43 +159,49 @@ namespace GreenMind.Service.Authentication.Services
                 if (!_hasher.Verify(user.PasswordHash, dto.Password))
                     throw new AuthHttpException(401, "Invalid Email/UserName or Password");
 
-                var token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name);
+                _context.UserActivityLogs.Add(new UserActivityLog
+                {
+                    UserName = user.Name,
+                    ActionType = "User Login",
+                    StartedAt = DateTime.Now
+                });
+
+                await _context.SaveChangesAsync();
 
                 return new AuthResponseDto
                 {
-                    Token = token,
+                    Token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name),
                     UserName = user.Name,
                     Role = "User"
                 };
             }
-            else
+
+            // ================= ADMIN =================
+            var admin = await _context.Admins.FirstOrDefaultAsync(a =>
+                a.Email.ToLower() == key || a.Name.ToLower() == key);
+
+            if (admin == null)
+                throw new AuthHttpException(401, "Invalid Email/UserName or Password");
+
+            if (!_hasher.Verify(admin.Password, dto.Password))
+                throw new AuthHttpException(401, "Invalid Email/UserName or Password");
+
+            _context.UserActivityLogs.Add(new UserActivityLog
             {
-                var userMismatch = await _context.Users
-                    .AnyAsync(u => u.Email.ToLower() == key.ToLower() || u.Name == key);
+                UserName = admin.Name,
+                ActionType = "Admin Login",
+                StartedAt = DateTime.Now
+            });
 
-                if (userMismatch)
-                    throw new AuthHttpException(403, "Forbidden: role mismatch");
+            await _context.SaveChangesAsync();
 
-                var admin = await _context.Admins.FirstOrDefaultAsync(a =>
-                    a.Email.ToLower() == key.ToLower() || a.Name == key);
-
-                if (admin == null)
-                    throw new AuthHttpException(401, "Invalid Email/UserName or Password");
-
-                if (!_hasher.Verify(admin.Password, dto.Password))
-                    throw new AuthHttpException(401, "Invalid Email/UserName or Password");
-
-                var token = _jwtService.GenerateToken(admin.Email, "Admin", admin.Id, admin.Name);
-
-                return new AuthResponseDto
-                {
-                    Token = token,
-                    UserName = admin.Name,
-                    Role = "Admin"
-                };
-            }
+            return new AuthResponseDto
+            {
+                Token = _jwtService.GenerateToken(admin.Email, "Admin", admin.Id, admin.Name),
+                UserName = admin.Name,
+                Role = "Admin"
+            };
         }
-
         public async Task<string> ForgotPasswordAsync(ForgotPasswordRequestDto dto)
         {
             var email = NormalizeEmail(dto.Email);

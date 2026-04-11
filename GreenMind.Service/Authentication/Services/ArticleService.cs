@@ -21,13 +21,21 @@ namespace GreenMind.Service.Services
                 .ThenByDescending(x => x.CreatedAt)
                 .ToListAsync();
 
+            // ✔ بدل Exception → رجع فاضي
             if (!articles.Any())
-                throw new Exception("No articles found");
+            {
+                return new ArticlesPageDto
+                {
+                    FeaturedArticle = null,
+                    AllArticles = new List<ArticleCardDto>()
+                };
+            }
 
             string Limit(string text) =>
                 text.Length <= 150 ? text : text[..150] + "...";
 
-            var featured = articles.FirstOrDefault(x => x.IsFeatured) ?? articles.First();
+            var featured = articles.FirstOrDefault(x => x.IsFeatured)
+                           ?? articles.First();
 
             return new ArticlesPageDto
             {

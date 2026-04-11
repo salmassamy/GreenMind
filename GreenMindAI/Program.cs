@@ -1,4 +1,5 @@
-﻿using GreenMind.Presistance.Data.DbContexts;
+﻿using GreenMind.Domain.Entities;
+using GreenMind.Presistance.Data.DbContexts;
 using GreenMind.Service.Authentication.Services;
 using GreenMind.Service.Services;
 using GreenMind.ServiceAbstraction.Authentication;
@@ -61,10 +62,23 @@ builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISocialAuthService, SocialAuthService>();
-builder.Services.AddHttpClient();
-builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+
+builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrEmpty(jwtKey))
@@ -91,7 +105,30 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Build app
 var app = builder.Build();
+
+// Seed Admin
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    var hasher = services.GetRequiredService<IPasswordHasherService>();
+
+    if (!context.Admins.Any())
+    {
+        var admin = new Admin
+        {
+            Name = "Admin",
+            Email = "admin@gmail.com",
+            Password = hasher.Hash("123456"),
+            CreatedDate = DateTime.Now
+        };
+
+        context.Admins.Add(admin);
+        context.SaveChanges();
+    }
+}
 
 // Middleware
 if (app.Environment.IsDevelopment())
@@ -100,11 +137,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 
+app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-app.MapGet("/", () => "API is running ");
+app.MapGet("/", () => "API is running");
+
 app.Run();

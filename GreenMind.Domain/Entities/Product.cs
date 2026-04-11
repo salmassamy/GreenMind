@@ -1,24 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GreenMind.Domain.Entities
 {
-    public class Product : BaseEntity
+    public class Product
     {
-        public string Name { get; set; } = null!;
+        [Key]
+        public Guid Id { get; set; } = Guid.NewGuid();
+
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
-        public string Description { get; set; } = null!;
-        public string ImageURL { get; set; } = null!;
-        public int StockQuantity { get; set; }
 
-        // Foreign Key للصنف
+        public string ImageURL { get; set; } = string.Empty;
+
+        // 🔥 Foreign Key (Category is int)
         public int CategoryId { get; set; }
-        public Category Category { get; set; } = null!;
 
-        // الربط مع CartItem (المنتج ممكن يظهر في كذا عربة تسوق)
-        public ICollection<CartItem> CartItems { get; set; } = new HashSet<CartItem>();
+        // Navigation Property
+        public Category? Category { get; set; }
     }
 }

@@ -1,8 +1,9 @@
 ﻿using GreenMind.Domain.Entities;
 using GreenMind.Presistance.Data.DbContexts;
 using GreenMind.ServiceAbstraction.DTOs;
-using GreenMind.ServiceAbstraction.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace GreenMind.Service.Services
 {
@@ -14,67 +15,82 @@ namespace GreenMind.Service.Services
         {
             _context = context;
         }
+        private async Task<AdminProductDto> MapToDto(Guid productId)
+        {
+            var entity = await _context.Products
+                .Include(x => x.Category)
+                .FirstOrDefaultAsync(x => x.Id == productId);
 
+            if (entity == null)
+                throw new Exception("Product not found");
+
+            return new AdminProductDto
+            {
+                Id = entity.Id.ToString(),
+                Name = entity.Name,
+                Description = entity.Description,
+                Image = entity.ImageURL,
+                Category = entity.Category?.Name ?? "",
+                Price = $"{entity.Price}$"
+            };
+        }
+        // ================= CREATE =================
         public async Task<AdminProductDto> CreateProductAsync(CreateUpdateProductDto dto)
         {
             ValidateProduct(dto);
+
+            var category = await GetOrCreateCategoryAsync(dto.CategoryName);
+
+            var imageUrl = await SaveImageAsync(dto.Image!);
 
             var entity = new Product
             {
                 Name = dto.Name.Trim(),
                 Description = dto.Description.Trim(),
-                CategoryId = dto.CategoryId,
+                CategoryId = category.Id, // int ✔
                 Price = dto.Price,
-                ImageURL = dto.Image.Trim()
+                ImageURL = imageUrl
             };
 
             _context.Products.Add(entity);
             await _context.SaveChangesAsync();
 
-            return new AdminProductDto
-            {
-                Id = entity.Id.ToString(),
-                Name = entity.Name,
-                Description = entity.Description,
-                Image = entity.ImageURL,
-                Category = entity.Category != null ? entity.Category.Name : "",
-                Price = $"{entity.Price}$"
-            };
+            return await MapToDto(entity.Id); // Guid ✔
         }
 
-        public async Task<AdminProductDto> UpdateProductAsync(int id, CreateUpdateProductDto dto)
+        // ================= UPDATE =================
+        public async Task<AdminProductDto> UpdateProductAsync(Guid id, CreateUpdateProductDto dto)
         {
-            ValidateProduct(dto);
+            ValidateProduct(dto, true);
 
             var entity = await _context.Products
-                .Include(x => x.Category)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.Id == id); // Guid ✔
 
             if (entity == null)
                 throw new Exception("Product not found");
 
+            var category = await GetOrCreateCategoryAsync(dto.CategoryName);
+
             entity.Name = dto.Name.Trim();
             entity.Description = dto.Description.Trim();
-            entity.CategoryId = dto.CategoryId;
+            entity.CategoryId = category.Id; // int ✔
             entity.Price = dto.Price;
-            entity.ImageURL = dto.Image.Trim();
+
+            if (dto.Image != null && dto.Image.Length > 0)
+            {
+                entity.ImageURL = await SaveImageAsync(dto.Image);
+            }
 
             await _context.SaveChangesAsync();
 
-            return new AdminProductDto
-            {
-                Id = entity.Id.ToString(),
-                Name = entity.Name,
-                Description = entity.Description,
-                Image = entity.ImageURL,
-                Category = entity.Category != null ? entity.Category.Name : "",
-                Price = $"{entity.Price}$"
-            };
+            return await MapToDto(entity.Id);
         }
 
-        public async Task DeleteProductAsync(int id)
+        // ================= DELETE =================
+        public async Task DeleteProductAsync(Guid id)
         {
-            var entity = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
+            var entity = await _context.Products
+                .FirstOrDefaultAsync(x => x.Id == id); // Guid ✔
 
             if (entity == null)
                 throw new Exception("Product not found");
@@ -83,37 +99,7 @@ namespace GreenMind.Service.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<UserActivitiesResponseDto> GetUserActivitiesAsync(string? search)
-        {
-            var query = _context.UserActivityLogs.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(x =>
-                    x.UserName.Contains(search) ||
-                    x.ActionType.Contains(search));
-
-            var rows = await query
-                .OrderByDescending(x => x.StartedAt.Date)
-                .ThenByDescending(x => x.StartedAt)
-                .ToListAsync();
-
-            var activities = rows
-                .GroupBy(x => x.StartedAt.Date)
-                .Select(g => new ActivityDayDto
-                {
-                    Date = g.Key.ToString("yyyy/M/d"),
-                    Logs = g.Select(x => new ActivityLogDto
-                    {
-                        Time = x.EndedAt.HasValue
-                            ? $"{x.StartedAt:hh:mm tt} - {x.EndedAt.Value:hh:mm tt}"
-                            : x.StartedAt.ToString("hh:mm tt"),
-                        Action = $"User: {x.UserName} - {x.ActionType}"
-                    }).ToList()
-                })
-                .ToList();
-
-            return new UserActivitiesResponseDto { Activities = activities };
-        }
+        // ================= GET ORDERS =================
         public async Task<OrdersResponseDto> GetOrdersAsync()
         {
             var orders = await _context.Orders
@@ -132,19 +118,118 @@ namespace GreenMind.Service.Services
             return new OrdersResponseDto { Orders = orders };
         }
 
-        private static void ValidateProduct(CreateUpdateProductDto dto)
+        // ================= USER ACTIVITIES =================
+        public async Task<UserActivitiesResponseDto> GetUserActivitiesAsync(string? search)
+        {
+            var query = _context.UserActivityLogs.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x =>
+                    x.UserName.Contains(search) ||
+                    x.ActionType.Contains(search));
+            }
+
+            var rows = await query.ToListAsync();
+
+            var activities = rows
+                .GroupBy(x => x.StartedAt.Date)
+                .Select(g => new ActivityDayDto
+                {
+                    Date = g.Key.ToString("yyyy/M/d"),
+                    Logs = g.Select(x => new ActivityLogDto
+                    {
+                        Time = x.StartedAt.ToString("hh:mm tt"),
+                        Action = $"User: {x.UserName} - {x.ActionType}"
+                    }).ToList()
+                })
+                .ToList();
+
+            return new UserActivitiesResponseDto
+            {
+                Activities = activities
+            };
+        }
+
+        // ================= HOME =================
+        public async Task<AdminHomeSummaryDto> GetHomeSummaryAsync()
+        {
+            var totalUsers = await _context.Users.CountAsync();
+            var totalProducts = await _context.Products.CountAsync();
+            var totalOrders = await _context.Orders.CountAsync();
+
+            return new AdminHomeSummaryDto
+            {
+                Stats = new List<AdminStatDto>
+                {
+                    new AdminStatDto { Title = "Orders", Value = totalOrders.ToString() },
+                    new AdminStatDto { Title = "Products", Value = totalProducts.ToString() },
+                    new AdminStatDto { Title = "Users", Value = totalUsers.ToString() }
+                }
+            };
+        }
+
+        // ================= CATEGORY =================
+        private async Task<Category> GetOrCreateCategoryAsync(string name)
+        {
+            var normalized = name.Trim().ToLower();
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(x => x.Name.ToLower() == normalized); // string ✔
+
+            if (category == null)
+            {
+                category = new Category
+                {
+                    Name = name.Trim()
+                };
+
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
+            }
+
+            return category;
+        }
+
+        // ================= IMAGE =================
+        private async Task<string> SaveImageAsync(IFormFile image)
+        {
+            var extension = Path.GetExtension(image.FileName).ToLower();
+
+            var allowed = new[] { ".jpg", ".jpeg", ".png" };
+
+            if (!allowed.Contains(extension))
+                throw new Exception("Invalid image");
+
+            var fileName = Guid.NewGuid() + extension;
+
+            var path = Path.Combine("wwwroot", "images");
+
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            var fullPath = Path.Combine(path, fileName);
+
+            using var stream = new FileStream(fullPath, FileMode.Create);
+            await image.CopyToAsync(stream);
+
+            return "/images/" + fileName;
+        }
+
+        // ================= VALIDATION =================
+        private static void ValidateProduct(CreateUpdateProductDto dto, bool isUpdate = false)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new Exception("Name is required");
+                throw new Exception("Name required");
 
-            if (dto.CategoryId <= 0)
-                throw new Exception("Category is required");
+            if (string.IsNullOrWhiteSpace(dto.CategoryName))
+                throw new Exception("Category required");
 
             if (dto.Price <= 0)
-                throw new Exception("Price is required");
+                throw new Exception("Price invalid");
 
-            if (string.IsNullOrWhiteSpace(dto.Image))
-                throw new Exception("Image is required");
+            if (!isUpdate && dto.Image == null)
+                throw new Exception("Image required");
         }
     }
 }

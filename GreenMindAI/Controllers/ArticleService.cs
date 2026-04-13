@@ -5,7 +5,6 @@ namespace GreenMindAI.Controllers
 {
     [Route("articles/api")]
     [ApiController]
-   
     public class ArticlesController : ControllerBase
     {
         private readonly IArticleService _articleService;
@@ -20,6 +19,17 @@ namespace GreenMindAI.Controllers
         {
             var result = await _articleService.GetArticlesPageAsync();
             return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var article = await _articleService.GetByIdAsync(id);
+
+            if (article == null)
+                return NotFound();
+
+            return Ok(article);
         }
     }
 }

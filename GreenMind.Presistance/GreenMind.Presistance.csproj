@@ -14,8 +14,8 @@
 
   <ItemGroup>
     <Folder Include="Data\Configrations\" />
-    <Folder Include="Data\DataSeed\" />
     <Folder Include="Data\Migrations\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
   <ItemGroup>

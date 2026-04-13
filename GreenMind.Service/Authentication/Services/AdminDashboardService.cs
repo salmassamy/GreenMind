@@ -10,10 +10,12 @@ namespace GreenMind.Service.Services
     public class AdminDashboardService : IAdminDashboardService
     {
         private readonly ApplicationDbContext _context;
-
-        public AdminDashboardService(ApplicationDbContext context)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public AdminDashboardService(ApplicationDbContext context,IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
+
         }
         private async Task<AdminProductDto> MapToDto(Guid productId)
         {
@@ -150,7 +152,23 @@ namespace GreenMind.Service.Services
                 Activities = activities
             };
         }
+        public async Task<List<AdminProductDto>> GetProductsAsync()
+        {
+            var products = await _context.Products
+                .Include(x => x.Category)
+                .OrderByDescending(x => x.Id)
+                .ToListAsync();
 
+            return products.Select(x => new AdminProductDto
+            {
+                Id = x.Id.ToString(),
+                Name = x.Name,
+                Description = x.Description,
+                Image = x.ImageURL,
+                Category = x.Category != null ? x.Category.Name : "",
+                Price = $"{x.Price}$"
+            }).ToList();
+        }
         // ================= HOME =================
         public async Task<AdminHomeSummaryDto> GetHomeSummaryAsync()
         {
@@ -213,7 +231,11 @@ namespace GreenMind.Service.Services
             using var stream = new FileStream(fullPath, FileMode.Create);
             await image.CopyToAsync(stream);
 
-            return "/images/" + fileName;
+            // 🔥 أهم تعديل هنا
+            var request = _httpContextAccessor.HttpContext!.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+
+            return $"{baseUrl}/images/{fileName}";
         }
 
         // ================= VALIDATION =================

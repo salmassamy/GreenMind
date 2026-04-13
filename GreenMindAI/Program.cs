@@ -1,5 +1,6 @@
 ﻿using GreenMind.Domain.Entities;
 using GreenMind.Presistance.Data.DbContexts;
+using GreenMind.Presistance.Data.Seed;
 using GreenMind.Service.Authentication.Services;
 using GreenMind.Service.Services;
 using GreenMind.ServiceAbstraction.Authentication;
@@ -65,6 +66,7 @@ builder.Services.AddScoped<ISocialAuthService, SocialAuthService>();
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 
@@ -105,10 +107,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Build app
 var app = builder.Build();
 
-// Seed Admin
+
+// =========================
+// 🔥 SEED ADMIN
+// =========================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -117,18 +121,32 @@ using (var scope = app.Services.CreateScope())
 
     if (!context.Admins.Any())
     {
-        var admin = new Admin
+        context.Admins.Add(new Admin
         {
             Name = "Admin",
             Email = "admin@gmail.com",
             Password = hasher.Hash("123456"),
             CreatedDate = DateTime.Now
-        };
+        });
 
-        context.Admins.Add(admin);
         context.SaveChanges();
     }
 }
+
+
+// =========================
+// 🔥 SEED ARTICLES (NEW)
+// =========================
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    if (!context.Articles.Any())
+    {
+        ArticleSeeder.Seed(context);
+    }
+}
+
 
 // Middleware
 if (app.Environment.IsDevelopment())
@@ -141,8 +159,10 @@ app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 app.MapGet("/", () => "API is running");
 

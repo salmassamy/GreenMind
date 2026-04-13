@@ -7,7 +7,7 @@ public interface IAdminDashboardService
     Task<AdminProductDto> UpdateProductAsync(Guid id, CreateUpdateProductDto dto);
 
     Task DeleteProductAsync(Guid id);
-
+    Task<List<AdminProductDto>> GetProductsAsync();
     Task<OrdersResponseDto> GetOrdersAsync();
 
     Task<AdminHomeSummaryDto> GetHomeSummaryAsync();

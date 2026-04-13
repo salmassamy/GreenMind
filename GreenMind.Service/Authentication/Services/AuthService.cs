@@ -116,17 +116,29 @@ namespace GreenMind.Service.Authentication.Services
 
             if (string.IsNullOrWhiteSpace(dto.Password))
                 throw new AuthHttpException(400, "Password is required");
-           if (dto.Password.Length < 6)
+
+            if (dto.Password.Length < 6)
                 throw new AuthHttpException(400, "Password must be at least 6 characters");
 
             var user = new User
             {
                 Name = name,
                 Email = email,
-                PasswordHash = _hasher.Hash(dto.Password)
+                PasswordHash = _hasher.Hash(dto.Password),
+                CreatedDate = DateTime.UtcNow // 🔥 مهم لو موجود في BaseEntity
             };
 
             _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // ================= LOG ACTIVITY (IMPORTANT FIX) =================
+            _context.UserActivityLogs.Add(new UserActivityLog
+            {
+                UserName = user.Name,
+                ActionType = "Register",
+                StartedAt = DateTime.UtcNow
+            });
+
             await _context.SaveChangesAsync();
 
             var token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name);
@@ -159,11 +171,12 @@ namespace GreenMind.Service.Authentication.Services
                 if (!_hasher.Verify(user.PasswordHash, dto.Password))
                     throw new AuthHttpException(401, "Invalid Email/UserName or Password");
 
+                // ================= LOG USER LOGIN =================
                 _context.UserActivityLogs.Add(new UserActivityLog
                 {
                     UserName = user.Name,
-                    ActionType = "User Login",
-                    StartedAt = DateTime.Now
+                    ActionType = "Login",
+                    StartedAt = DateTime.UtcNow
                 });
 
                 await _context.SaveChangesAsync();
@@ -186,11 +199,12 @@ namespace GreenMind.Service.Authentication.Services
             if (!_hasher.Verify(admin.Password, dto.Password))
                 throw new AuthHttpException(401, "Invalid Email/UserName or Password");
 
+            // ================= LOG ADMIN LOGIN =================
             _context.UserActivityLogs.Add(new UserActivityLog
             {
                 UserName = admin.Name,
                 ActionType = "Admin Login",
-                StartedAt = DateTime.Now
+                StartedAt = DateTime.UtcNow
             });
 
             await _context.SaveChangesAsync();

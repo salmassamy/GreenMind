@@ -1,4 +1,5 @@
-﻿using GreenMind.Domain.Entities;
+﻿using GreenMind.DataSeed;
+using GreenMind.Domain.Entities;
 using GreenMind.Presistance.Data.DbContexts;
 using GreenMind.Presistance.Data.Seed;
 using GreenMind.Service.Authentication.Services;
@@ -147,7 +148,12 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+    await OrderSeeder.SeedAsync(context);
+}
 // Middleware
 if (app.Environment.IsDevelopment())
 {

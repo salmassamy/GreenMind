@@ -1,7 +1,9 @@
-﻿using GreenMind.ServiceAbstraction.DTOs;
+﻿using GreenMind.Domain.Entities;
+using GreenMind.ServiceAbstraction.DTOs;
 using GreenMind.ServiceAbstraction.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GreenMindAI.Controllers
 {
@@ -62,6 +64,8 @@ namespace GreenMindAI.Controllers
         {
             return Ok(await _service.GetOrdersAsync());
         }
+     
+ 
 
         // ================= HOME SUMMARY =================
         [HttpGet("home-summary")]

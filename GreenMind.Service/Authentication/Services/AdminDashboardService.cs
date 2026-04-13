@@ -139,7 +139,10 @@ namespace GreenMind.Service.Services
                 .Select(x => new AdminOrderDto
                 {
                     Id = x.Id.ToString(),
-                    Customer = x.User.Name,
+
+                    // 🔥 هنا الاسم الحقيقي من المستخدم
+                    Customer = x.User != null ? x.User.Name : "Unknown",
+
                     Date = x.OrderDate.ToString("dd/MM/yyyy"),
                     Price = x.TotalAmount.ToString("0.##"),
                     Status = x.Status

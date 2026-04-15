@@ -114,16 +114,29 @@ namespace GreenMind.Service.Authentication.Services
             if (string.IsNullOrWhiteSpace(dto.Password))
                 throw new AuthHttpException(400, "Password is required");
             if (dto.Password.Length < 6)
+
+            if (dto.Password.Length < 6)
                 throw new AuthHttpException(400, "Password must be at least 6 characters");
 
             var user = new User
             {
                 Name = name,
                 Email = email,
-                PasswordHash = _hasher.Hash(dto.Password)
+                PasswordHash = _hasher.Hash(dto.Password),
+                CreatedDate = DateTime.UtcNow // 🔥 مهم لو موجود في BaseEntity
             };
 
             _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // ================= LOG ACTIVITY (IMPORTANT FIX) =================
+            _context.UserActivityLogs.Add(new UserActivityLog
+            {
+                UserName = user.Name,
+                ActionType = "Register",
+                StartedAt = DateTime.UtcNow
+            });
+
             await _context.SaveChangesAsync();
 
             var token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name);
@@ -138,20 +151,19 @@ namespace GreenMind.Service.Authentication.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
-            var key = dto.Email.Trim();
+            var key = dto.Email?.Trim().ToLower();
             var role = NormalizeRole(dto.Role);
             var normalizedKey = key.ToLower();
 
+            if (string.IsNullOrWhiteSpace(key))
+                throw new AuthHttpException(400, "Email/UserName is required");
+
+            // ================= USER =================
             if (role.Equals("User", StringComparison.OrdinalIgnoreCase))
             {
-                var adminMismatch = await _context.Admins
-                    .AnyAsync(a => a.Email.ToLower() == normalizedKey || a.Name.ToLower() == normalizedKey);
-
-                if (adminMismatch)
-                    throw new AuthHttpException(403, "Forbidden: role mismatch");
-
                 var user = await _context.Users.FirstOrDefaultAsync(u =>
                     u.Email.ToLower() == normalizedKey || u.Name.ToLower() == normalizedKey);
+                    u.Email.ToLower() == key || u.Name.ToLower() == key);
 
                 if (user == null)
                     throw new AuthHttpException(401, "Invalid Email/UserName or Password");
@@ -159,34 +171,48 @@ namespace GreenMind.Service.Authentication.Services
                 if (!_hasher.Verify(user.PasswordHash, dto.Password))
                     throw new AuthHttpException(401, "Invalid Email/UserName or Password");
 
-                var token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name);
+                // ================= LOG USER LOGIN =================
+                _context.UserActivityLogs.Add(new UserActivityLog
+                {
+                    UserName = user.Name,
+                    ActionType = "Login",
+                    StartedAt = DateTime.UtcNow
+                });
+
+                await _context.SaveChangesAsync();
 
                 return new AuthResponseDto
                 {
-                    Token = token,
+                    Token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name),
                     UserName = user.Name,
                     Role = "User"
                 };
             }
-            else // Admin
-            {
-                
-                var userMismatch = await _context.Users
-                    .AnyAsync(u => u.Email.ToLower() == normalizedKey || u.Name.ToLower() == normalizedKey);
 
                 if (userMismatch)
                     throw new AuthHttpException(403, "Forbidden: role mismatch");
 
                 var admin = await _context.Admins.FirstOrDefaultAsync(a =>
                     a.Email.ToLower() == normalizedKey || a.Name.ToLower() == normalizedKey);
+            // ================= ADMIN =================
+            var admin = await _context.Admins.FirstOrDefaultAsync(a =>
+                a.Email.ToLower() == key || a.Name.ToLower() == key);
 
-                if (admin == null)
-                    throw new AuthHttpException(401, "Invalid Email/UserName or Password");
+            if (admin == null)
+                throw new AuthHttpException(401, "Invalid Email/UserName or Password");
 
-                if (!_hasher.Verify(admin.Password, dto.Password))
-                    throw new AuthHttpException(401, "Invalid Email/UserName or Password");
+            if (!_hasher.Verify(admin.Password, dto.Password))
+                throw new AuthHttpException(401, "Invalid Email/UserName or Password");
 
-                var token = _jwtService.GenerateToken(admin.Email, "Admin", admin.Id, admin.Name);
+            // ================= LOG ADMIN LOGIN =================
+            _context.UserActivityLogs.Add(new UserActivityLog
+            {
+                UserName = admin.Name,
+                ActionType = "Admin Login",
+                StartedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
 
                 return new AuthResponseDto
                 {
@@ -195,6 +221,13 @@ namespace GreenMind.Service.Authentication.Services
                     Role = "Admin"
                 };
             }
+        }
+            return new AuthResponseDto
+            {
+                Token = _jwtService.GenerateToken(admin.Email, "Admin", admin.Id, admin.Name),
+                UserName = admin.Name,
+                Role = "Admin"
+            };
         }
         public async Task<string> ForgotPasswordAsync(ForgotPasswordRequestDto dto)
         {

@@ -15,7 +15,7 @@ namespace GreenMind.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] 
+   // [Authorize] 
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -28,16 +28,17 @@ namespace GreenMind.Presentation.Controllers
         [HttpPost("checkout")]
         public async Task<IActionResult> Checkout(CheckoutRequestDto checkoutDto)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            // 1. عطلنا الجزء اللي بيسأل على التوكن واللوجن مؤقتاً
+            // var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            // if (userIdClaim == null)
+            //    return Unauthorized();
 
-            if (userIdClaim == null)
-                return Unauthorized();
-
-            int userId = int.Parse(userIdClaim.Value);
+            // 2. ثبتنا الـ ID برقم يوزر موجود عندك في الداتا بيز (وليكن 1)
+            int userId = 1;
 
             try
             {
-               
+                // 3. الميثود هتشتغل عادي بالـ ID رقم 1
                 var orderId = await _orderService.PlaceOrderAsync(userId, checkoutDto);
 
                 return Ok(new
@@ -48,7 +49,6 @@ namespace GreenMind.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                
                 return BadRequest(new { message = ex.Message });
             }
         }

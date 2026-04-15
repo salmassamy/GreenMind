@@ -1,19 +1,29 @@
-﻿using GreenMind.ServiceAbstraction.DTOs;
+﻿using GreenMind.Domain.Entities;
+using GreenMind.Presistance.Data.DbContexts;
+using GreenMind.ServiceAbstraction.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Json;
+
 
 namespace GreenMind.Presentation.Controllers
 {
     [ApiController]
-   
+
     [Route("api")]
     public class AIController : ControllerBase
     {
-        private readonly HttpClient _httpClient;
 
-        public AIController(HttpClient httpClient)
+        private readonly HttpClient _httpClient;
+        private readonly ApplicationDbContext _context; 
+
+        public AIController(HttpClient httpClient, ApplicationDbContext context)
         {
             _httpClient = httpClient;
+            _context = context;
         }
 
         [HttpPost("recommend-crop")]
@@ -21,38 +31,47 @@ namespace GreenMind.Presentation.Controllers
         {
             if (!ModelState.IsValid)
             {
-                //مؤقتا بس عشان التحذير يروح لما نستلم ال api الحقيقي من تيم الـ AI، بعدين لما تشتغل مع الرابط الحقيقي هتشيل السطر ده
-                await Task.CompletedTask;
                 return BadRequest(ModelState);
             }
 
             try
             {
-                // حالياً سنترك هذا الجزء معطلاً أو يرجع Mock Data حتى يسلمك تيم الـ AI الرابط الحقيقي
-                // string aiApiUrl = "http://127.0.0.1:5000/predict"; 
-                // var response = await _httpClient.PostAsJsonAsync(aiApiUrl, input);
+                string aiApiUrl = "https://overplant-growing-handmade.ngrok-free.dev/predict";
 
-                // الرد الوهمي (Mock Response) متوافق مع اسم الخانة اللي الفرونت مستنيها
-                var mockResult = new { recommendedCrop = "Rice" };
-
-                return Ok(mockResult);
-
-                /* الكود الحقيقي عند توفر رابط تيم الـ AI:
+                var response = await _httpClient.PostAsJsonAsync(aiApiUrl, input);
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<object>();
-                    return Ok(result);
+                    // 1. استلام النتيجة بالكامل (عشان ترجع للفرونت إيند)
+                    var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+                    // 2. سحب النص المكتوب في message لحفظه في الداتابيز
+                    string aiMessage = result.GetProperty("message").GetString() ?? "Unknown Crop Result";
+
+                    var history = new UserActivityHistory
+                    {
+                        UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1"),
+                        Type = "crop",
+                        Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                        Text = aiMessage, // كدة هيتحفظ "The best crop to plant is Tomato_winter"
+                        Image = $"{Request.Scheme}://{Request.Host}/uploads/crop_default.png"
+                    };
+
+                    _context.UserActivityHistory.Add(history);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(result); // بنرجع الـ JSON كامل لمحمد عشان يعرض الـ top_3_crops كمان
                 }
-                return BadRequest("مشكلة في التواصل مع سيرفر الـ AI");
-                */
+                return BadRequest(new { message = "Failed to communicate with the Crop Recommendation AI service." });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal error: {ex.Message}");
             }
         }
+
         [HttpPost("recommend-fertilizer")]
         public async Task<IActionResult> GetFertilizerRecommendation([FromBody] FertilizerRecommendationDto input)
+
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -69,5 +88,103 @@ namespace GreenMind.Presentation.Controllers
                 return StatusCode(500, $"Internal error: {ex.Message}");
             }
         }
+
+        [HttpPost("detect-disease")]
+        public async Task<IActionResult> DetectDisease([FromForm] DiseaseDiagnosisDto input)
+        {
+            if (input.Images == null || !input.Images.Any())
+            {
+                return BadRequest(new { message = "No images uploaded." });
+            }
+
+            var finalResults = new List<object>();
+            string aiServerUrl = "http://127.0.0.1:8888/predict";
+
+            try
+            {
+                foreach (var file in input.Images)
+                {
+                    // 1. حفظ الصورة فعلياً على السيرفر عشان محمد يشوفها
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    if (!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
+
+                    var fullPath = Path.Combine(uploadsPath, fileName);
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    // 2. إنشاء رابط الصورة الحقيقي
+                    // بدل ما نثبت localhost، نخليه ياخد العنوان اللي الطلب جاي منه (سواء ngrok أو غيره)
+                    var imageUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+
+                    // 3. كلام سيرفر الـ AI (المنطق بتاعك زي ما هو)
+                    using var content = new MultipartFormDataContent();
+                    using var fileStream = file.OpenReadStream();
+                    var fileContent = new StreamContent(fileStream);
+                    content.Add(fileContent, "image", file.FileName);
+
+                    var response = await _httpClient.PostAsync(aiServerUrl, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var aiData = await response.Content.ReadFromJsonAsync<AIDetectionResponse>();
+                        if (aiData != null)
+                        {
+                            var history = new UserActivityHistory
+                            {
+                                UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1"),
+                                Type = "disease",
+                                Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                                Image = imageUrl, // الرابط الحقيقي اللي هيظهر الصورة لمحمد
+                                Text = $"Plant: {aiData.Plant}, Disease: {aiData.Disease}, Severity: {aiData.Severity}"
+                            };
+
+                            _context.UserActivityHistory.Add(history);
+                            finalResults.Add(new { imageName = file.FileName, diagnosis = aiData, permanentImageUrl = imageUrl });
+                        }
+                    }
+                    else
+                    {
+                        var errorReason = await response.Content.ReadAsStringAsync();
+                        finalResults.Add(new { imageName = file.FileName, error = "AI Server Error", detail = errorReason });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok(new { results = finalResults });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal error: {ex.Message}");
+            }
+        }
+        [HttpGet("user-ai-history/{type}")]
+         public async Task<IActionResult> GetUserHistory(string type)
+        {
+            try
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1";
+                int userId = int.Parse(userIdStr);
+
+                var history = await _context.UserActivityHistory
+                    .Where(h => h.UserId == userId && h.Type == type) // فلترة بالـ UserId والـ Type مع بعض
+                    .OrderByDescending(h => h.Id)
+                    .Select(h => new {
+                        h.Id,
+                        h.Text,
+                        h.Date,
+                        h.Image
+                    })
+                    .ToListAsync();
+
+                return Ok(history);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal error: {ex.Message}");
+            }
+        }
     }
-}
+    }

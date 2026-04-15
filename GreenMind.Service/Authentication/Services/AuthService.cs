@@ -49,15 +49,12 @@ namespace GreenMind.Service.Authentication.Services
             if (string.IsNullOrWhiteSpace(role))
                 throw new AuthHttpException(400, "Role is required");
 
-            role = role.Trim();
+            var r = role.Trim();
 
-            if (!role.Equals("User", StringComparison.OrdinalIgnoreCase) &&
-                !role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new AuthHttpException(400, "Role must be User or Admin");
-            }
+            if (r.Equals("User", StringComparison.OrdinalIgnoreCase)) return "User";
+            if (r.Equals("Admin", StringComparison.OrdinalIgnoreCase)) return "Admin";
 
-            return role;
+            throw new AuthHttpException(400, "Role must be User or Admin");
         }
 
         private string GenerateOtp()
@@ -116,7 +113,7 @@ namespace GreenMind.Service.Authentication.Services
 
             if (string.IsNullOrWhiteSpace(dto.Password))
                 throw new AuthHttpException(400, "Password is required");
-           if (dto.Password.Length < 6)
+            if (dto.Password.Length < 6)
                 throw new AuthHttpException(400, "Password must be at least 6 characters");
 
             var user = new User
@@ -143,17 +140,18 @@ namespace GreenMind.Service.Authentication.Services
         {
             var key = dto.Email.Trim();
             var role = NormalizeRole(dto.Role);
+            var normalizedKey = key.ToLower();
 
             if (role.Equals("User", StringComparison.OrdinalIgnoreCase))
             {
                 var adminMismatch = await _context.Admins
-                    .AnyAsync(a => a.Email.ToLower() == key.ToLower() || a.Name == key);
+                    .AnyAsync(a => a.Email.ToLower() == normalizedKey || a.Name.ToLower() == normalizedKey);
 
                 if (adminMismatch)
                     throw new AuthHttpException(403, "Forbidden: role mismatch");
 
                 var user = await _context.Users.FirstOrDefaultAsync(u =>
-                    u.Email.ToLower() == key.ToLower() || u.Name == key);
+                    u.Email.ToLower() == normalizedKey || u.Name.ToLower() == normalizedKey);
 
                 if (user == null)
                     throw new AuthHttpException(401, "Invalid Email/UserName or Password");
@@ -170,16 +168,17 @@ namespace GreenMind.Service.Authentication.Services
                     Role = "User"
                 };
             }
-            else
+            else // Admin
             {
+                
                 var userMismatch = await _context.Users
-                    .AnyAsync(u => u.Email.ToLower() == key.ToLower() || u.Name == key);
+                    .AnyAsync(u => u.Email.ToLower() == normalizedKey || u.Name.ToLower() == normalizedKey);
 
                 if (userMismatch)
                     throw new AuthHttpException(403, "Forbidden: role mismatch");
 
                 var admin = await _context.Admins.FirstOrDefaultAsync(a =>
-                    a.Email.ToLower() == key.ToLower() || a.Name == key);
+                    a.Email.ToLower() == normalizedKey || a.Name.ToLower() == normalizedKey);
 
                 if (admin == null)
                     throw new AuthHttpException(401, "Invalid Email/UserName or Password");
@@ -197,7 +196,6 @@ namespace GreenMind.Service.Authentication.Services
                 };
             }
         }
-
         public async Task<string> ForgotPasswordAsync(ForgotPasswordRequestDto dto)
         {
             var email = NormalizeEmail(dto.Email);
@@ -228,7 +226,7 @@ namespace GreenMind.Service.Authentication.Services
         {
             var email = NormalizeEmail(dto.Email);
             var role = NormalizeRole(dto.Role);
-             if (!role.Equals("User", StringComparison.OrdinalIgnoreCase))
+            if (!role.Equals("User", StringComparison.OrdinalIgnoreCase))
                 throw new AuthHttpException(403, "Reset password allowed for users only");
 
             if (string.IsNullOrWhiteSpace(dto.Otp))

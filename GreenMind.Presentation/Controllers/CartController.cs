@@ -46,21 +46,22 @@ namespace GreenMindAI.Controllers
 
             return Ok(response);
         }
-       
+
         [HttpPost("add")]
-        [Authorize] 
-        public async Task<IActionResult> AddToCart(int productId, int quantity)
+        // [Authorize] 
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartDto request) // هنا التغيير
         {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-            {
-                return Unauthorized();
-            }
-
+            // 1. الجزء بتاع الـ Claim معمول له Comment زي ما هو
+            /* var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
             int userId = int.Parse(userIdClaim.Value);
+            */
 
-            await _cartService.AddItemToCartAsync(userId, productId, quantity);
+            // 2. هنستخدم userId ثابت (1) للتجربة زي ما إنتي عاملة
+            int userId = 1;
+
+            // 3. بنسحب البيانات من الـ request DTO اللي جاي من الفرونت إند
+            await _cartService.AddItemToCartAsync(userId, request.ProductId, request.Quantity);
 
             return Ok(new { message = "Product added successfully to your account's cart!" });
         }
@@ -79,11 +80,12 @@ namespace GreenMindAI.Controllers
             return Ok(new { message = "Item removed" });
         }
 
-        [HttpDelete("clear")] 
-        [Authorize]
+        [HttpDelete("clear")]
+        // [Authorize]
         public async Task<IActionResult> ClearCart()
         {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            // 1. تعليق مؤقت للجزء بتاع الـ Claim عشان رحاب تمسح الكارت من غير Token
+            /* var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null)
             {
@@ -91,6 +93,10 @@ namespace GreenMindAI.Controllers
             }
 
             int userId = int.Parse(userIdClaim.Value);
+            */
+
+            // 2. تثبيت الـ userId على رقم 1 للتجربة
+            int userId = 1;
 
             await _cartService.ClearCartAsync(userId);
 

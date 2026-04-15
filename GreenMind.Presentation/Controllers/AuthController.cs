@@ -1,4 +1,5 @@
 ﻿using GreenMind.Service.Authentication.DTOs;
+using GreenMind.Service.Authentication.Services;
 using GreenMind.ServiceAbstraction.Authentication;
 using GreenMind.ServiceAbstraction.Authentication.DTOs;
 using GreenMind.ServiceAbstraction.DTOs;
@@ -25,10 +26,21 @@ namespace GreenMindAI.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var result = await _authService.LoginAsync(dto);
-            return Ok(result);
+            try
+            {
+                var response = await _authService.LoginAsync(dto);
+                return Ok(response);
+            }
+            catch (AuthHttpException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (Exception )
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
+            }
         }
 
         [HttpPost("forgot-password")]

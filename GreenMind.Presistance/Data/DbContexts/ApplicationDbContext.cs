@@ -1,5 +1,7 @@
 ﻿using GreenMind.Domain.Entities;
+using GreenMind.Presistance.Data.DataSeed;
 using Microsoft.EntityFrameworkCore;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,17 +31,44 @@ namespace GreenMind.Presistance.Data.DbContexts
         public DbSet<Article> Articles { get; set; }
       
         public DbSet<UserActivityLog> UserActivityLogs { get; set; }
-  
+        public DbSet<UserActivityHistory> UserActivityHistory { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // السطر ده مهم جداً عشان يلقط أي إعدادات خاصة (Fluent API) هنعملها قدام
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+            // 1. إضافة الأدمن أوتوماتيكياً (Seeding)
+            modelBuilder.Entity<Admin>().HasData(new Admin
+            {
+                Id = 1,
+                Name = "SalmaAdmin",
+                Email = "admin01@gmail.com",
+                Password = "AQAAAAEAACcQAAAAEBy9Mjk9Z3lR5jL2PqX9H3L0T4M5Z6X7qG9zF9vL2K8W7M5Z6X7",
+                CreatedDate = DateTime.Now
+            });
+
+            // 2. حل مشكلة الـ Cascade Path
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Address)
+                .WithMany()
+                .HasForeignKey(o => o.AddressId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // 3. حل رسايل الـ Warnings بتاعة الـ Decimal
+            foreach (var property in modelBuilder.Model.GetEntityTypes()
+                        .SelectMany(t => t.GetProperties())
+                        .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
+            {
+                property.SetColumnType("decimal(18,2)");
+            }
+
+            // 4. السطر اللي هيفعل كلاس الـ Seed بتاع المنتجات
+            modelBuilder.ApplyConfiguration(new CategorySeed()); 
+            modelBuilder.ApplyConfiguration(new ProductSeed());
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            // السطر ده هيخلي الـ EF يطنش مشكلة الوقت المتغير ويحدث الداتابيز
+           
             optionsBuilder.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         }
     }

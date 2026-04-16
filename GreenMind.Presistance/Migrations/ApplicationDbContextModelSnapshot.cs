@@ -37,6 +37,13 @@ namespace GreenMind.Presistance.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Street")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -77,6 +84,16 @@ namespace GreenMind.Presistance.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Admins");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedDate = new DateTime(2026, 4, 16, 4, 17, 5, 377, DateTimeKind.Local).AddTicks(1141),
+                            Email = "admin01@gmail.com",
+                            Name = "SalmaAdmin",
+                            Password = "AQAAAAEAACcQAAAAEBy9Mjk9Z3lR5jL2PqX9H3L0T4M5Z6X7qG9zF9vL2K8W7M5Z6X7"
+                        });
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Article", b =>
@@ -153,9 +170,6 @@ namespace GreenMind.Presistance.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ProductId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -163,7 +177,7 @@ namespace GreenMind.Presistance.Migrations
 
                     b.HasIndex("CartId");
 
-                    b.HasIndex("ProductId1");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("CartItems");
                 });
@@ -186,6 +200,32 @@ namespace GreenMind.Presistance.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Seeds"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Soil"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Tools"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Fertilizers"
+                        });
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.ChatLog", b =>
@@ -224,15 +264,41 @@ namespace GreenMind.Presistance.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AddressId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ShippingCost")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -241,6 +307,8 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("UserId");
 
@@ -264,9 +332,6 @@ namespace GreenMind.Presistance.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ProductId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -277,7 +342,7 @@ namespace GreenMind.Presistance.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("ProductId1");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
                 });
@@ -315,18 +380,19 @@ namespace GreenMind.Presistance.Migrations
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Product", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
+                    b.Property<string>("Desc")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageURL")
+                    b.Property<string>("Img")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -337,11 +403,196 @@ namespace GreenMind.Presistance.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 1,
+                            Desc = "Refreshing aroma, vibrant leaves. Perfect for teas, cooking, and home gardens. Easy to grow!",
+                            Img = "/images/mint seeds.png",
+                            Name = "Premium Mint Seeds",
+                            Price = 50m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryId = 1,
+                            Desc = "Grow coffee at home with premium seeds. Cultivate aromatic beans for your daily brew. Perfect for enthusiasts.",
+                            Img = "/images/coffee.png",
+                            Name = "Coffee Seeds",
+                            Price = 50m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryId = 1,
+                            Desc = "Peppery and aromatic. Fast-growing, easy care. Perfect for pickling, fish, and salads.",
+                            Img = "/images/s.png",
+                            Name = "Premium Dill Seeds",
+                            Price = 50m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 1,
+                            Desc = "Fresh, sweet garden peas. Easy to grow, tender, and delicious pods. Enjoy homegrown peas in 60-70 days.",
+                            Img = "/images/pea.png",
+                            Name = "Premium Pea Seeds",
+                            Price = 50m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CategoryId = 1,
+                            Desc = "High yield, excellent taste. Ideal for paddy, disease resistant. Perfect for the Egyptian climate.",
+                            Img = "/images/ri.png",
+                            Name = "Premium Rice Seeds",
+                            Price = 50m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CategoryId = 1,
+                            Desc = "Crisp, peppery leaves. Ideal for salads and sandwiches. Fast-growing and rich in vitamins.",
+                            Img = "/images/arugula.png",
+                            Name = "Premium Arugula Seeds",
+                            Price = 50m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CategoryId = 1,
+                            Desc = "Rich in protein and fiber. Ideal for healthy Egyptian cooking. Grow fresh beans for soups and stews.",
+                            Img = "/images/white bean.png",
+                            Name = "Premium White Bean Seeds",
+                            Price = 50m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CategoryId = 2,
+                            Desc = "8 Quarts formula. Specialized for seed germination and cuttings. Approved for organic growing.",
+                            Img = "/images/organic seed.png",
+                            Name = "Organic Seed Starting",
+                            Price = 100m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CategoryId = 2,
+                            Desc = "Available in .75 or 1.5 cubic feet. Formulated for herbs, vegetables, and indoor plants.",
+                            Img = "/images/P.png",
+                            Name = "Potting Mix",
+                            Price = 100m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CategoryId = 2,
+                            Desc = "1 Cubic foot. Formulated for flower beds, vegetable gardens, trees, and shrubs. For in-ground use.",
+                            Img = "/images/garden soil.png",
+                            Name = "Garden Soil",
+                            Price = 100m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CategoryId = 2,
+                            Desc = "Enriched with Humus. Available in .75 cubic feet bags for nutrient-rich soil.",
+                            Img = "/images/composted manure.png",
+                            Name = "Composted Manure",
+                            Price = 100m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CategoryId = 2,
+                            Desc = "1 Cubic foot. Ideal for container gardens, hanging baskets, and window boxes.",
+                            Img = "/images/potting soil.png",
+                            Name = "Potting Soil",
+                            Price = 100m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CategoryId = 3,
+                            Desc = "High quality digging tool.",
+                            Img = "/images/Rectangle.png",
+                            Name = "Digging Fork",
+                            Price = 200m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CategoryId = 3,
+                            Desc = "Durable garden shovel.",
+                            Img = "/images/shovel.png",
+                            Name = "Shovel",
+                            Price = 200m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CategoryId = 3,
+                            Desc = "Precision digging tool.",
+                            Img = "/images/T.png",
+                            Name = "Square-Point Shovel",
+                            Price = 200m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CategoryId = 3,
+                            Desc = "Easy-pour watering can.",
+                            Img = "/images/watering.png",
+                            Name = "Watering Can",
+                            Price = 200m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CategoryId = 3,
+                            Desc = "Small hand tool for soil.",
+                            Img = "/images/Hand.png",
+                            Name = "Hand Cultivator",
+                            Price = 200m,
+                            StockQuantity = 0
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CategoryId = 3,
+                            Desc = "Versatile round shovel.",
+                            Img = "/images/point Shovel.png",
+                            Name = "Round-Point Shovel",
+                            Price = 200m,
+                            StockQuantity = 0
+                        });
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Review", b =>
@@ -362,9 +613,6 @@ namespace GreenMind.Presistance.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ProductId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
@@ -376,7 +624,7 @@ namespace GreenMind.Presistance.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId1");
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("UserId");
 
@@ -418,6 +666,39 @@ namespace GreenMind.Presistance.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("GreenMind.Domain.Entities.UserActivityHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Date")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserActivityHistory");
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.UserActivityLog", b =>
@@ -478,8 +759,8 @@ namespace GreenMind.Presistance.Migrations
                         .IsRequired();
 
                     b.HasOne("GreenMind.Domain.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId1")
+                        .WithMany("CartItems")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -501,11 +782,19 @@ namespace GreenMind.Presistance.Migrations
 
             modelBuilder.Entity("GreenMind.Domain.Entities.Order", b =>
                 {
+                    b.HasOne("GreenMind.Domain.Entities.Address", "Address")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("GreenMind.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Address");
 
                     b.Navigation("User");
                 });
@@ -520,7 +809,7 @@ namespace GreenMind.Presistance.Migrations
 
                     b.HasOne("GreenMind.Domain.Entities.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId1")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -555,7 +844,7 @@ namespace GreenMind.Presistance.Migrations
                 {
                     b.HasOne("GreenMind.Domain.Entities.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId1")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -566,6 +855,17 @@ namespace GreenMind.Presistance.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GreenMind.Domain.Entities.UserActivityHistory", b =>
+                {
+                    b.HasOne("GreenMind.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -583,6 +883,11 @@ namespace GreenMind.Presistance.Migrations
             modelBuilder.Entity("GreenMind.Domain.Entities.Order", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("GreenMind.Domain.Entities.Product", b =>
+                {
+                    b.Navigation("CartItems");
                 });
 
             modelBuilder.Entity("GreenMind.Domain.Entities.User", b =>

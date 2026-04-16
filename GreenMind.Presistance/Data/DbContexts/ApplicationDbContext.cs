@@ -1,5 +1,5 @@
 ﻿using GreenMind.Domain.Entities;
-using GreenMind.Presistance.Data.DataSeed;
+using GreenMind.Presistance.DataSeed;
 using Microsoft.EntityFrameworkCore;
 
 using System;

@@ -1,37 +1,37 @@
 ﻿using GreenMind.Domain.Entities;
+using GreenMind.Presistance.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace GreenMind.Presistance.Data.DataSeed
 namespace GreenMind.Presistance.DataSeed
 {
     public class CategorySeed : IEntityTypeConfiguration<Category>
-    public static class CategorySeed
     {
         public void Configure(EntityTypeBuilder<Category> builder)
-        public static void Seed(ModelBuilder modelBuilder)
         {
             builder.HasData(
                 new Category { Id = 1, Name = "Seeds", CreatedDate = new DateTime(2026, 1, 1) },
                 new Category { Id = 2, Name = "Soil", CreatedDate = new DateTime(2026, 1, 1) },
-                new Category { Id = 3, Name = "Tools", CreatedDate = new DateTime(2026, 1, 1) }
-            modelBuilder.Entity<Category>().HasData(
-                new Category
-                {
-                    Id = 1,
-                    Name = "Fertilizers"
-                },
-                new Category
-                {
-                    Id = 2,
-                    Name = "Seeds"
-                },
-                new Category
-                {
-                    Id = 3,
-                    Name = "Tools"
-                }
+                new Category { Id = 3, Name = "Tools", CreatedDate = new DateTime(2026, 1, 1) },
+                new Category { Id = 4, Name = "Fertilizers", CreatedDate = new DateTime(2026, 1, 1) }
             );
+        }
+
+        // ضيفي الميثود دي عشان أخطاء الـ Program.cs تختفي
+        public static async Task SeedAsync(ApplicationDbContext context)
+        {
+            if (!await context.Categories.AnyAsync())
+            {
+                var categories = new List<Category>
+                {
+                    new Category { Name = "Seeds", CreatedDate = new DateTime(2026, 1, 1) },
+                    new Category { Name = "Soil", CreatedDate = new DateTime(2026, 1, 1) },
+                    new Category { Name = "Tools", CreatedDate = new DateTime(2026, 1, 1) },
+                    new Category { Name = "Fertilizers", CreatedDate = new DateTime(2026, 1, 1) }
+                };
+                await context.Categories.AddRangeAsync(categories);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

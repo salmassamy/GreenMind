@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace GreenMind.Presistance.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class InitialCleanCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -98,11 +100,13 @@ namespace GreenMind.Presistance.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Desc = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Img = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StockQuantity = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -124,6 +128,8 @@ namespace GreenMind.Presistance.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -181,22 +187,22 @@ namespace GreenMind.Presistance.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Orders",
+                name: "UserActivityHistory",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Date = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.PrimaryKey("PK_UserActivityHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Orders_Users_UserId",
+                        name: "FK_UserActivityHistory_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -214,20 +220,55 @@ namespace GreenMind.Presistance.Migrations
                     ReviewDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    ProductId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Reviews", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reviews_Products_ProductId1",
-                        column: x => x.ProductId1,
+                        name: "FK_Reviews_Products_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Reviews_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShippingCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    AddressId = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Orders_Addresses_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Addresses",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Orders_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -243,7 +284,6 @@ namespace GreenMind.Presistance.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     CartId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    ProductId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -256,8 +296,8 @@ namespace GreenMind.Presistance.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CartItems_Products_ProductId1",
-                        column: x => x.ProductId1,
+                        name: "FK_CartItems_Products_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -273,7 +313,6 @@ namespace GreenMind.Presistance.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     OrderId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    ProductId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -286,8 +325,8 @@ namespace GreenMind.Presistance.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderItems_Products_ProductId1",
-                        column: x => x.ProductId1,
+                        name: "FK_OrderItems_Products_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -316,6 +355,47 @@ namespace GreenMind.Presistance.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Admins",
+                columns: new[] { "Id", "CreatedDate", "Email", "Name", "Password" },
+                values: new object[] { 1, new DateTime(2026, 4, 16, 4, 17, 5, 377, DateTimeKind.Local).AddTicks(1141), "admin01@gmail.com", "SalmaAdmin", "AQAAAAEAACcQAAAAEBy9Mjk9Z3lR5jL2PqX9H3L0T4M5Z6X7qG9zF9vL2K8W7M5Z6X7" });
+
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "CreatedDate", "Name" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Seeds" },
+                    { 2, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Soil" },
+                    { 3, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Tools" },
+                    { 4, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Fertilizers" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "Id", "CategoryId", "Desc", "Img", "Name", "Price", "StockQuantity" },
+                values: new object[,]
+                {
+                    { 1, 1, "Refreshing aroma, vibrant leaves. Perfect for teas, cooking, and home gardens. Easy to grow!", "/images/mint seeds.png", "Premium Mint Seeds", 50m, 0 },
+                    { 2, 1, "Grow coffee at home with premium seeds. Cultivate aromatic beans for your daily brew. Perfect for enthusiasts.", "/images/coffee.png", "Coffee Seeds", 50m, 0 },
+                    { 3, 1, "Peppery and aromatic. Fast-growing, easy care. Perfect for pickling, fish, and salads.", "/images/s.png", "Premium Dill Seeds", 50m, 0 },
+                    { 4, 1, "Fresh, sweet garden peas. Easy to grow, tender, and delicious pods. Enjoy homegrown peas in 60-70 days.", "/images/pea.png", "Premium Pea Seeds", 50m, 0 },
+                    { 5, 1, "High yield, excellent taste. Ideal for paddy, disease resistant. Perfect for the Egyptian climate.", "/images/ri.png", "Premium Rice Seeds", 50m, 0 },
+                    { 6, 1, "Crisp, peppery leaves. Ideal for salads and sandwiches. Fast-growing and rich in vitamins.", "/images/arugula.png", "Premium Arugula Seeds", 50m, 0 },
+                    { 7, 1, "Rich in protein and fiber. Ideal for healthy Egyptian cooking. Grow fresh beans for soups and stews.", "/images/white bean.png", "Premium White Bean Seeds", 50m, 0 },
+                    { 8, 2, "8 Quarts formula. Specialized for seed germination and cuttings. Approved for organic growing.", "/images/organic seed.png", "Organic Seed Starting", 100m, 0 },
+                    { 9, 2, "Available in .75 or 1.5 cubic feet. Formulated for herbs, vegetables, and indoor plants.", "/images/P.png", "Potting Mix", 100m, 0 },
+                    { 10, 2, "1 Cubic foot. Formulated for flower beds, vegetable gardens, trees, and shrubs. For in-ground use.", "/images/garden soil.png", "Garden Soil", 100m, 0 },
+                    { 11, 2, "Enriched with Humus. Available in .75 cubic feet bags for nutrient-rich soil.", "/images/composted manure.png", "Composted Manure", 100m, 0 },
+                    { 12, 2, "1 Cubic foot. Ideal for container gardens, hanging baskets, and window boxes.", "/images/potting soil.png", "Potting Soil", 100m, 0 },
+                    { 13, 3, "High quality digging tool.", "/images/Rectangle.png", "Digging Fork", 200m, 0 },
+                    { 14, 3, "Durable garden shovel.", "/images/shovel.png", "Shovel", 200m, 0 },
+                    { 15, 3, "Precision digging tool.", "/images/T.png", "Square-Point Shovel", 200m, 0 },
+                    { 16, 3, "Easy-pour watering can.", "/images/watering.png", "Watering Can", 200m, 0 },
+                    { 17, 3, "Small hand tool for soil.", "/images/Hand.png", "Hand Cultivator", 200m, 0 },
+                    { 18, 3, "Versatile round shovel.", "/images/point Shovel.png", "Round-Point Shovel", 200m, 0 }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Addresses_UserId",
                 table: "Addresses",
@@ -327,9 +407,9 @@ namespace GreenMind.Presistance.Migrations
                 column: "CartId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartItems_ProductId1",
+                name: "IX_CartItems_ProductId",
                 table: "CartItems",
-                column: "ProductId1");
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_UserId",
@@ -348,9 +428,14 @@ namespace GreenMind.Presistance.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderItems_ProductId1",
+                name: "IX_OrderItems_ProductId",
                 table: "OrderItems",
-                column: "ProductId1");
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_AddressId",
+                table: "Orders",
+                column: "AddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",
@@ -368,22 +453,24 @@ namespace GreenMind.Presistance.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reviews_ProductId1",
+                name: "IX_Reviews_ProductId",
                 table: "Reviews",
-                column: "ProductId1");
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_UserId",
                 table: "Reviews",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserActivityHistory_UserId",
+                table: "UserActivityHistory",
                 column: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Addresses");
-
             migrationBuilder.DropTable(
                 name: "Admins");
 
@@ -406,6 +493,9 @@ namespace GreenMind.Presistance.Migrations
                 name: "Reviews");
 
             migrationBuilder.DropTable(
+                name: "UserActivityHistory");
+
+            migrationBuilder.DropTable(
                 name: "UserActivityLogs");
 
             migrationBuilder.DropTable(
@@ -418,10 +508,13 @@ namespace GreenMind.Presistance.Migrations
                 name: "Products");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Addresses");
 
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

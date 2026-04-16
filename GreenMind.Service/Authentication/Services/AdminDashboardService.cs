@@ -11,13 +11,13 @@ namespace GreenMind.Service.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public AdminDashboardService(ApplicationDbContext context,IHttpContextAccessor httpContextAccessor)
+        public AdminDashboardService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
 
         }
-        private async Task<AdminProductDto> MapToDto(Guid productId)
+        private async Task<AdminProductDto> MapToDto(int productId)
         {
             var entity = await _context.Products
                 .Include(x => x.Category)
@@ -28,11 +28,14 @@ namespace GreenMind.Service.Services
 
             return new AdminProductDto
             {
+                // حولنا الـ Id لنص لأن الـ DTO لسه مستنيه string
                 Id = entity.Id.ToString(),
                 Name = entity.Name,
-                Description = entity.Description,
-                Image = entity.ImageURL,
-                Category = entity.Category?.Name ?? "",
+                // استخدمنا Desc اللي موجودة في الـ Entity وربطناها بـ Description في الـ DTO
+                Description = entity.Desc,
+                // استخدمنا Img اللي موجودة في الـ Entity وربطناها بـ Image في الـ DTO
+                Image = entity.Img,
+                Category = entity.Category?.Name ?? "No Category",
                 Price = $"{entity.Price}$"
             };
         }
@@ -49,12 +52,9 @@ namespace GreenMind.Service.Services
             {
                 Name = dto.Name.Trim(),
                 Desc = dto.Description.Trim(),
-                CategoryId = dto.CategoryId,
-                Description = dto.Description.Trim(),
                 CategoryId = category.Id,
                 Price = dto.Price,
-                Img = dto.Image.Trim()
-                ImageURL = imageUrl
+                Img = imageUrl
             };
 
             _context.Products.Add(entity);
@@ -63,13 +63,6 @@ namespace GreenMind.Service.Services
             // ================= LOG ACTIVITY =================
             _context.UserActivityLogs.Add(new UserActivityLog
             {
-                Id = entity.Id.ToString(),
-                Name = entity.Name,
-                Description = entity.Desc,
-                Image = entity.Img,
-                Category = entity.Category != null ? entity.Category.Name : "",
-                Price = $"{entity.Price}$"
-            };
                 UserName = "Admin",
                 ActionType = "CreateProduct",
                 StartedAt = DateTime.UtcNow
@@ -81,7 +74,7 @@ namespace GreenMind.Service.Services
         }
 
         // ================= UPDATE =================
-        public async Task<AdminProductDto> UpdateProductAsync(Guid id, CreateUpdateProductDto dto)
+        public async Task<AdminProductDto> UpdateProductAsync(int id, CreateUpdateProductDto dto)
         {
             ValidateProduct(dto, true);
 
@@ -95,14 +88,12 @@ namespace GreenMind.Service.Services
 
             entity.Name = dto.Name.Trim();
             entity.Desc = dto.Description.Trim();
-            entity.CategoryId = dto.CategoryId;
-            entity.Description = dto.Description.Trim();
             entity.CategoryId = category.Id;
             entity.Price = dto.Price;
 
             if (dto.Image != null && dto.Image.Length > 0)
             {
-                entity.ImageURL = await SaveImageAsync(dto.Image);
+                entity.Img = await SaveImageAsync(dto.Image);
             }
 
             await _context.SaveChangesAsync();
@@ -110,14 +101,6 @@ namespace GreenMind.Service.Services
             // ================= LOG ACTIVITY =================
             _context.UserActivityLogs.Add(new UserActivityLog
             {
-                Id = entity.Id.ToString(),
-                Name = entity.Name,
-                Description = entity.Desc,
-                Image = entity.Img,
-                Category = entity.Category != null ? entity.Category.Name : "",
-                Price = $"{entity.Price}$"
-            };
-        }
                 UserName = "Admin",
                 ActionType = "UpdateProduct",
                 StartedAt = DateTime.UtcNow
@@ -128,7 +111,7 @@ namespace GreenMind.Service.Services
             return await MapToDto(entity.Id);
         }
         // ================= DELETE =================
-        public async Task DeleteProductAsync(Guid id)
+        public async Task DeleteProductAsync(int id)
         {
             var entity = await _context.Products
                 .FirstOrDefaultAsync(x => x.Id == id);
@@ -215,8 +198,8 @@ namespace GreenMind.Service.Services
             {
                 Id = x.Id.ToString(),
                 Name = x.Name,
-                Description = x.Description,
-                Image = x.ImageURL,
+                Description = x.Desc,
+                Image = x.Img,
                 Category = x.Category != null ? x.Category.Name : "",
                 Price = $"{x.Price}$"
             }).ToList();

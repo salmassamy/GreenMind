@@ -1,21 +1,18 @@
-﻿using GreenMind.Domain.Contracts;
-using GreenMind.DataSeed;
-using GreenMind.Domain.Entities;
-using GreenMind.Presistance.Repositories;
-using GreenMind.Service;
-using GreenMind.Service.Authentication.Services;
-using GreenMind.Service.Services;
-using GreenMind.Presistance.Data.Seed;
-using GreenMind.Service.Authentication.Services;
-using GreenMind.Service.Services;
+﻿using GreenMind.DataSeed;
 using GreenMind.Domain.Contracts;
-using GreenMind.Presistance.Data.DataSeed; // لإضافة الـ Seeders الخاصة بسيف
+using GreenMind.Domain.Entities;
+// السطر ده هو اللي هيحل مشكلة الـ Endpoints المختفية
+using GreenMind.Presentation.Controllers;
 using GreenMind.Presistance.Data.DbContexts;
+using GreenMind.Presistance.Data.Seed;
 using GreenMind.Presistance.Repositories;
 using GreenMind.Service;
+using GreenMind.Service.Authentication.Services;
 using GreenMind.Service.Services;
-using GreenMind.ServiceAbstraction;
+using GreenMind.Service.Services.ShoppingCart;
 using GreenMind.ServiceAbstraction.Authentication;
+using GreenMind.ServiceAbstraction.Interfaces;
+using GreenMindAI.Controllers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,136 +21,170 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Add services to the container
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-
-// 2. Swagger Configuration
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "GreenMind API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-builder.Services.AddScoped<IArticleService, ArticleService>();
-builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-
-// CORS
+// =========================
+// 🌐 CORS Policy
+// =========================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
+// =========================
+// 🎮 Controllers Configuration
+// =========================
+// التعديل هنا: بنقول للـ API تروح تجيب الـ Controllers من مشروع الـ Presentation
+builder.Services.AddControllers()
+    .AddApplicationPart(typeof(AdminController).Assembly);
+
+builder.Services.AddEndpointsApiExplorer();
+
+// =========================
+// 🛡️ Swagger Configuration
+// =========================
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "GreenMind API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter token like this: Bearer {your token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
             },
-            new string[]{}
+            Array.Empty<string>()
         }
     });
 });
 
-// 3. Database Connection
+// =========================
+// 💾 Database Context
+// =========================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 4. Register Custom Services (شغلك وشغل سيف سوا)
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+// =========================
+// 🛠️ Dependency Injection (Services & Repositories)
+// =========================
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISocialAuthService, SocialAuthService>();
 
-// شغلك الخاص بالـ Recommendation
-builder.Services.AddScoped<ICropRecommendationService, CropRecommendationService>();
-builder.Services.AddScoped<IHistoryService, HistoryService>();
-
-// خدمات سيف الجديدة (الـ Logger والـ Dashboard)
-builder.Services.AddScoped<IUserActivityLogger, UserActivityLogger>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUserActivityLogger, UserActivityLogger>();
 
-// 5. Authentication Configuration
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+// =========================
+// 🔑 JWT Authentication
+// =========================
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtKey))
+    throw new Exception("Jwt:Key is missing in appsettings.json");
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer(o =>
+.AddJwtBearer(options =>
 {
-    o.RequireHttpsMetadata = false;
-    o.SaveToken = false;
-    o.TokenValidationParameters = new TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidIssuer = builder.Configuration["JWT:Issuer"],
-        ValidAudience = builder.Configuration["JWT:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
 
-// 6. CORS Policy
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-    });
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// 7. Auto-Migration and Data Seeding (عشان ملفات سيف الجديدة تشتغل)
+// ==========================================
+// 🔥 DATA SEEDING (Run on Startup)
+// ==========================================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    var hasher = services.GetRequiredService<IPasswordHasherService>();
+
+    if (!context.Admins.Any())
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        await context.Database.MigrateAsync();
-        // تشغيل الـ Seeders
-        await CategorySeed.SeedAsync(context);
-        await ProductSeed.SeedAsync(context);
+        context.Admins.Add(new Admin
+        {
+            Name = "Admin",
+            Email = "admin@gmail.com",
+            Password = hasher.Hash("123456"),
+            CreatedDate = DateTime.Now
+        });
+        context.SaveChanges();
     }
-    catch (Exception ex)
+
+    if (!context.Articles.Any())
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred during migration or seeding.");
+        ArticleSeeder.Seed(context);
     }
+
+    await OrderSeeder.SeedAsync(context);
 }
 
-// 8. Configure the HTTP request pipeline
+// =========================
+// 🚀 Middleware Pipeline
+// =========================
 if (app.Environment.IsDevelopment())
 {
-app.UseStaticFiles();
-app.UseCors("AllowAll");
-
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+app.MapGet("/", () => "API is running");
 
 app.Run();

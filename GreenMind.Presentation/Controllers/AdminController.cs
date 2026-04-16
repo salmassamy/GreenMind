@@ -28,21 +28,20 @@ namespace GreenMindAI.Controllers
 
         // ================= UPDATE =================
         [HttpPut("products/{id}")]
-        public async Task<IActionResult> UpdateProduct(string id, [FromForm] CreateUpdateProductDto dto)
+        public async Task<IActionResult> UpdateProduct(int id, [FromForm] CreateUpdateProductDto dto)
         {
-            var guidId = Guid.Parse(id); // 🔥 تحويل
-            var result = await _service.UpdateProductAsync(guidId, dto);
+            // مفيش داعي للـ Guid.Parse خالص دلوقتي
+            var result = await _service.UpdateProductAsync(id, dto);
             return Ok(result);
         }
 
         [HttpDelete("products/{id}")]
-        public async Task<IActionResult> DeleteProduct(string id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
-            var guidId = Guid.Parse(id); // 🔥 تحويل
-            await _service.DeleteProductAsync(guidId);
+            // بنمرر الـ id الـ int مباشرة للـ service
+            await _service.DeleteProductAsync(id);
             return Ok(new { message = "Product deleted successfully" });
         }
-
         // ================= GET ALL =================
         [HttpGet("products")]
         public async Task<IActionResult> GetProducts()

@@ -33,12 +33,12 @@ namespace GreenMind.Presentation.Controllers
             // if (userIdClaim == null)
             //    return Unauthorized();
 
-            // 2. ثبتنا الـ ID برقم يوزر موجود عندك في الداتا بيز (وليكن 1)
-            int userId = 1;
+            // 2. ثبتنا الـ ID برقم يوزر موجود عندك في الداتا بيز (وليكن 6)
+            int userId = 6;
 
             try
             {
-                // 3. الميثود هتشتغل عادي بالـ ID رقم 1
+                // 3. الميثود هتشتغل عادي بالـ ID رقم 6 
                 var orderId = await _orderService.PlaceOrderAsync(userId, checkoutDto);
 
                 return Ok(new

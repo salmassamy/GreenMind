@@ -8,18 +8,18 @@ namespace GreenMind.Domain.Entities
         public int Id { get; set; }
 
         [Required]
-        public int UserId { get; set; } // الربط مع المستخدم
+        public int UserId { get; set; } 
         public User? User { get; set; }
 
         [Required]
-        public string? Type { get; set; } // "disease", "crop", "fertilizer", "orders"
+        public string? Type { get; set; } 
 
         [Required]
-        public string? Text { get; set; } // "You uploaded a wheat leaf. Diseased."
+        public string? Text { get; set; } 
 
         [Required]
-        public string? Date { get; set; } // محمد طلب التاريخ string "2024-05-10"
+        public string? Date { get; set; } 
 
-        public string? Image { get; set; } // رابط الصورة URL
+        public string? Image { get; set; } 
     }
 }

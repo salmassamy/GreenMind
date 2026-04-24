@@ -1,8 +1,8 @@
 ﻿using GreenMind.DataSeed;
 using GreenMind.Domain.Contracts;
 using GreenMind.Domain.Entities;
-// السطر ده هو اللي هيحل مشكلة الـ Endpoints المختفية
 using GreenMind.Presentation.Controllers;
+using GreenMind.Presistance.Data.DataSeed;
 using GreenMind.Presistance.Data.DbContexts;
 using GreenMind.Presistance.Data.Seed;
 using GreenMind.Presistance.Repositories;
@@ -12,6 +12,7 @@ using GreenMind.Service.Services;
 using GreenMind.Service.Services.ShoppingCart;
 using GreenMind.ServiceAbstraction.Authentication;
 using GreenMind.ServiceAbstraction.Interfaces;
+using GreenMind.Services;
 using GreenMindAI.Controllers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ var builder = WebApplication.CreateBuilder(args);
 // =========================
 builder.Services.AddCors(options =>
 {
+    // السماح لكل المصادر (للتطوير)
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
@@ -37,7 +39,6 @@ builder.Services.AddCors(options =>
 // =========================
 // 🎮 Controllers Configuration
 // =========================
-// التعديل هنا: بنقول للـ API تروح تجيب الـ Controllers من مشروع الـ Presentation
 builder.Services.AddControllers()
     .AddApplicationPart(typeof(AdminController).Assembly);
 
@@ -48,12 +49,7 @@ builder.Services.AddEndpointsApiExplorer();
 // =========================
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "GreenMind API",
-        Version = "v1"
-    });
-
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "GreenMind API", Version = "v1" });
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -63,17 +59,12 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Description = "Enter token like this: Bearer {your token}"
     });
-
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             Array.Empty<string>()
         }
@@ -87,7 +78,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // =========================
-// 🛠️ Dependency Injection (Services & Repositories)
+// 🛠️ Dependency Injection
 // =========================
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtService>();
@@ -95,18 +86,20 @@ builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISocialAuthService, SocialAuthService>();
-
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUserActivityLogger, UserActivityLogger>();
-
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+
+builder.Services.AddHttpClient<IChatService, ChatService>();
 
 // =========================
 // 🔑 JWT Authentication
@@ -138,33 +131,35 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// ==========================================
-// 🔥 DATA SEEDING (Run on Startup)
-// ==========================================
+// =========================
+// 🔥 Data Seeding (هنا استخدمنا الـ AdminSeed اللي بيشفر الباسورد)
+// =========================
+//app.MapGet("/", () => "API is running");
+
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    var hasher = services.GetRequiredService<IPasswordHasherService>();
-
-    if (!context.Admins.Any())
+    try
     {
-        context.Admins.Add(new Admin
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        var hasher = services.GetRequiredService<IPasswordHasherService>();
+
+        // ده الأهم: بيضيف الأدمن وبيهيش الباسورد صح
+        await AdminSeed.SeedAsync(context, hasher);
+
+        if (!context.Articles.Any())
         {
-            Name = "Admin",
-            Email = "admin@gmail.com",
-            Password = hasher.Hash("123456"),
-            CreatedDate = DateTime.Now
-        });
-        context.SaveChanges();
-    }
+            ArticleSeeder.Seed(context);
+        }
 
-    if (!context.Articles.Any())
+        await OrderSeeder.SeedAsync(context);
+    }
+    catch (Exception ex)
     {
-        ArticleSeeder.Seed(context);
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
     }
-
-    await OrderSeeder.SeedAsync(context);
 }
 
 // =========================
@@ -177,14 +172,30 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(); // بيسمح بالوصول لملفات الصور في wwwroot
 
-app.UseCors("AllowAll");
+app.UseCors("AllowAll"); // بيفتح الـ CORS للطلبات الخارجية
+
+// المكان الصح للـ Headers اليدوية عشان تضمن إنها تتطبق على كل حاجة
+app.Use((context, next) =>
+{
+    context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+    context.Response.Headers.Append("Cross-Origin-Resource-Policy", "cross-origin");
+    return next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
-app.MapGet("/", () => "API is running");
+// Localization
+var supportedCultures = new[] { "en-US" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
+
+app.MapControllers(); // خلي الـ MapControllers دايماً في الآخر قبل الـ Run
 
 app.Run();

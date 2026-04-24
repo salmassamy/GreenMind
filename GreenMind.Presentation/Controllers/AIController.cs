@@ -39,29 +39,35 @@ namespace GreenMind.Presentation.Controllers
                 string aiApiUrl = "https://overplant-growing-handmade.ngrok-free.dev/predict";
 
                 var response = await _httpClient.PostAsJsonAsync(aiApiUrl, input);
-                if (response.IsSuccessStatusCode)
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    // 1. استلام النتيجة بالكامل (عشان ترجع للفرونت إيند)
-                    var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+                   
+                    var aiErrorMessage = await response.Content.ReadAsStringAsync();
 
-                    // 2. سحب النص المكتوب في message لحفظه في الداتابيز
-                    string aiMessage = result.GetProperty("message").GetString() ?? "Unknown Crop Result";
-
-                    var history = new UserActivityHistory
+                    return BadRequest(new
                     {
-                        UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1"),
-                        Type = "crop",
-                        Date = DateTime.Now.ToString("yyyy-MM-dd"),
-                        Text = aiMessage, // كدة هيتحفظ "The best crop to plant is Tomato_winter"
-                        Image = $"{Request.Scheme}://{Request.Host}/uploads/crop_default.png"
-                    };
-
-                    _context.UserActivityHistory.Add(history);
-                    await _context.SaveChangesAsync();
-
-                    return Ok(result); // بنرجع الـ JSON كامل لمحمد عشان يعرض الـ top_3_crops كمان
+                        message = "AI Validation Error",
+                        details = aiErrorMessage
+                    });
                 }
-                return BadRequest(new { message = "Failed to communicate with the Crop Recommendation AI service." });
+               
+                var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+                string aiMessage = result.GetProperty("message").GetString() ?? "Unknown Crop Result";
+
+                var history = new UserActivityHistory
+                {
+                    UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "6"),
+                    Type = "crop",
+                    Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                    Text = aiMessage,
+                    Image = $"{Request.Scheme}://{Request.Host}/uploads/crop_default.png"
+                };
+
+                _context.UserActivityHistory.Add(history);
+                await _context.SaveChangesAsync();
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -98,7 +104,7 @@ namespace GreenMind.Presentation.Controllers
             }
 
             var finalResults = new List<object>();
-            string aiServerUrl = "http://127.0.0.1:8888/predict";
+            string aiServerUrl = "http://127.0.0.1:8080/predict";
 
             try
             {
@@ -134,7 +140,7 @@ namespace GreenMind.Presentation.Controllers
                         {
                             var history = new UserActivityHistory
                             {
-                                UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1"),
+                                UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "6"),
                                 Type = "disease",
                                 Date = DateTime.Now.ToString("yyyy-MM-dd"),
                                 Image = imageUrl, // الرابط الحقيقي اللي هيظهر الصورة لمحمد
@@ -165,7 +171,7 @@ namespace GreenMind.Presentation.Controllers
         {
             try
             {
-                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1";
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "6";
                 int userId = int.Parse(userIdStr);
 
                 var history = await _context.UserActivityHistory

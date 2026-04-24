@@ -21,20 +21,21 @@ namespace GreenMind.Service.Authentication.Services
         private readonly ISocialAuthService _socialAuthService;
 
         public AuthService(
-            ApplicationDbContext context,
-            JwtService jwtService,
-            IPasswordHasherService hasher,
-            IMemoryCache cache,
-            IEmailService emailService,
-            ISocialAuthService socialAuthService)
+     ApplicationDbContext context,
+     JwtService jwtService,
+     IPasswordHasherService hasher, 
+     IMemoryCache cache,
+     IEmailService emailService,
+     ISocialAuthService socialAuthService)
         {
             _context = context;
             _jwtService = jwtService;
-            _hasher = hasher;
+            _hasher = hasher; 
             _cache = cache;
             _emailService = emailService;
             _socialAuthService = socialAuthService;
         }
+        // ================= HELPER METHODS =================
 
         private string NormalizeEmail(string email)
         {
@@ -66,58 +67,44 @@ namespace GreenMind.Service.Authentication.Services
             return rnd.Next(100000, 999999).ToString();
         }
 
-        private string GetOtpCacheKey(string role, string email)
-        {
-            return $"otp:{role.ToLower()}:{email.ToLower()}";
-        }
+        private string GetOtpCacheKey(string role, string email) => $"otp:{role.ToLower()}:{email.ToLower()}";
 
         private void SaveOtp(string role, string email, string otp)
         {
             var key = GetOtpCacheKey(role, email);
-
-            _cache.Set(key, otp, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            });
+            _cache.Set(key, otp, TimeSpan.FromMinutes(10));
         }
 
         private string? GetOtp(string role, string email)
         {
-            var key = GetOtpCacheKey(role, email);
-            _cache.TryGetValue(key, out string? otp);
+            _cache.TryGetValue(GetOtpCacheKey(role, email), out string? otp);
             return otp;
         }
 
         private Task InvalidateOtpAsync(string role, string email)
         {
-            var key = GetOtpCacheKey(role, email);
-            _cache.Remove(key);
+            _cache.Remove(GetOtpCacheKey(role, email));
             return Task.CompletedTask;
         }
+
+        // ================= MAIN METHODS =================
 
         public async Task<AuthResponseDto> RegisterUserAsync(RegisterUserDto dto)
         {
             var email = NormalizeEmail(dto.Email);
             var name = dto.Name.Trim();
 
-            var emailExists =
-                await _context.Users.AnyAsync(x => x.Email.ToLower() == email) ||
-                await _context.Admins.AnyAsync(x => x.Email.ToLower() == email);
+            var emailExists = await _context.Users.AnyAsync(x => x.Email.ToLower() == email) ||
+                              await _context.Admins.AnyAsync(x => x.Email.ToLower() == email);
 
-            if (emailExists)
-                throw new AuthHttpException(400, "Email already exists");
+            if (emailExists) throw new AuthHttpException(400, "Email already exists");
 
-            var nameExists =
-                await _context.Users.AnyAsync(x => x.Name == name) ||
-                await _context.Admins.AnyAsync(x => x.Name == name);
+            var nameExists = await _context.Users.AnyAsync(x => x.Name == name) ||
+                             await _context.Admins.AnyAsync(x => x.Name == name);
 
-            if (nameExists)
-                throw new AuthHttpException(400, "UserName already exists");
+            if (nameExists) throw new AuthHttpException(400, "UserName already exists");
 
-            if (string.IsNullOrWhiteSpace(dto.Password))
-                throw new AuthHttpException(400, "Password is required");
-
-            if (dto.Password.Length < 6)
+            if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
                 throw new AuthHttpException(400, "Password must be at least 6 characters");
 
             var user = new User
@@ -125,13 +112,12 @@ namespace GreenMind.Service.Authentication.Services
                 Name = name,
                 Email = email,
                 PasswordHash = _hasher.Hash(dto.Password),
-                CreatedDate = DateTime.UtcNow // 🔥 مهم لو موجود في BaseEntity
+                CreatedDate = DateTime.UtcNow
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // ================= LOG ACTIVITY (IMPORTANT FIX) =================
             _context.UserActivityLogs.Add(new UserActivityLog
             {
                 UserName = user.Name,
@@ -142,39 +128,29 @@ namespace GreenMind.Service.Authentication.Services
             await _context.SaveChangesAsync();
 
             var token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name);
-
-            return new AuthResponseDto
-            {
-                Token = token,
-                UserName = user.Name,
-                Role = "User"
-            };
+            return new AuthResponseDto { Token = token, UserName = user.Name, Role = "User" };
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
-            var key = dto.Email?.Trim().ToLower();
-            var role = NormalizeRole(dto.Role);
+            var key = (dto.Email ?? "").Trim().ToLower();
+            var password = dto.Password ?? "";
+            var role = NormalizeRole(dto.Role ?? "User");
 
-            if (string.IsNullOrWhiteSpace(key))
-                throw new AuthHttpException(400, "Email/UserName is required");
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(password))
+                throw new AuthHttpException(400, "Email/UserName and Password are required");
 
-            // ================= USER =================
             if (role.Equals("User", StringComparison.OrdinalIgnoreCase))
             {
                 var user = await _context.Users.FirstOrDefaultAsync(u =>
                     u.Email.ToLower() == key || u.Name.ToLower() == key);
 
-                if (user == null)
+                if (user == null || !_hasher.Verify(user.PasswordHash ?? "", password))
                     throw new AuthHttpException(401, "Invalid Email/UserName or Password");
 
-                if (!_hasher.Verify(user.PasswordHash, dto.Password))
-                    throw new AuthHttpException(401, "Invalid Email/UserName or Password");
-
-                // ================= LOG USER LOGIN =================
                 _context.UserActivityLogs.Add(new UserActivityLog
                 {
-                    UserName = user.Name,
+                    UserName = user.Name ?? "Unknown User",
                     ActionType = "Login",
                     StartedAt = DateTime.UtcNow
                 });
@@ -183,26 +159,22 @@ namespace GreenMind.Service.Authentication.Services
 
                 return new AuthResponseDto
                 {
-                    Token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name),
-                    UserName = user.Name,
+                    Token = _jwtService.GenerateToken(user.Email ?? "", "User", user.Id, user.Name ?? ""),
+                    UserName = user.Name ?? "",
                     Role = "User"
                 };
             }
 
-            // ================= ADMIN =================
+            // Admin Login logic
             var admin = await _context.Admins.FirstOrDefaultAsync(a =>
-                a.Email.ToLower() == key || a.Name.ToLower() == key);
+                a.Email.ToLower() == key || (a.Name != null && a.Name.ToLower() == key));
 
-            if (admin == null)
+            if (admin == null || !_hasher.Verify(admin.Password ?? "", password))
                 throw new AuthHttpException(401, "Invalid Email/UserName or Password");
 
-            if (!_hasher.Verify(admin.Password, dto.Password))
-                throw new AuthHttpException(401, "Invalid Email/UserName or Password");
-
-            // ================= LOG ADMIN LOGIN =================
             _context.UserActivityLogs.Add(new UserActivityLog
             {
-                UserName = admin.Name,
+                UserName = admin.Name ?? "Admin",
                 ActionType = "Admin Login",
                 StartedAt = DateTime.UtcNow
             });
@@ -211,11 +183,12 @@ namespace GreenMind.Service.Authentication.Services
 
             return new AuthResponseDto
             {
-                Token = _jwtService.GenerateToken(admin.Email, "Admin", admin.Id, admin.Name),
-                UserName = admin.Name,
+                Token = _jwtService.GenerateToken(admin.Email ?? "", "Admin", admin.Id, admin.Name ?? ""),
+                UserName = admin.Name ?? "",
                 Role = "Admin"
             };
         }
+
         public async Task<string> ForgotPasswordAsync(ForgotPasswordRequestDto dto)
         {
             var email = NormalizeEmail(dto.Email);
@@ -225,19 +198,11 @@ namespace GreenMind.Service.Authentication.Services
                 throw new AuthHttpException(403, "Forgot password allowed for users only");
 
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email);
-
-            if (user == null)
-                throw new AuthHttpException(404, "User not found");
+            if (user == null) throw new AuthHttpException(404, "User not found");
 
             var otp = GenerateOtp();
-
             SaveOtp(role, email, otp);
-
-            await _emailService.SendEmailAsync(
-                email,
-                "Reset Password OTP",
-                $"Your OTP code is: {otp}"
-            );
+            await _emailService.SendEmailAsync(email, "Reset Password OTP", $"Your OTP code is: {otp}");
 
             return "OTP sent successfully.";
         }
@@ -246,36 +211,21 @@ namespace GreenMind.Service.Authentication.Services
         {
             var email = NormalizeEmail(dto.Email);
             var role = NormalizeRole(dto.Role);
+
             if (!role.Equals("User", StringComparison.OrdinalIgnoreCase))
                 throw new AuthHttpException(403, "Reset password allowed for users only");
-
-            if (string.IsNullOrWhiteSpace(dto.Otp))
-                throw new AuthHttpException(400, "OTP is required");
-
-            if (string.IsNullOrWhiteSpace(dto.NewPassword))
-                throw new AuthHttpException(400, "NewPassword is required");
-
-            if (string.IsNullOrWhiteSpace(dto.ConfirmNewPassword))
-                throw new AuthHttpException(400, "ConfirmPassword is required");
 
             if (dto.NewPassword != dto.ConfirmNewPassword)
                 throw new AuthHttpException(400, "Passwords do not match");
 
             var savedOtp = GetOtp(role, email);
-
-            if (savedOtp == null)
-                throw new AuthHttpException(400, "OTP expired or not found");
-
-            if (!string.Equals(savedOtp, dto.Otp.Trim(), StringComparison.Ordinal))
-                throw new AuthHttpException(400, "Invalid OTP");
+            if (savedOtp == null || !string.Equals(savedOtp, dto.Otp?.Trim(), StringComparison.Ordinal))
+                throw new AuthHttpException(400, "Invalid or expired OTP");
 
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email);
-
-            if (user == null)
-                throw new AuthHttpException(404, "User not found");
+            if (user == null) throw new AuthHttpException(404, "User not found");
 
             user.PasswordHash = _hasher.Hash(dto.NewPassword);
-
             await _context.SaveChangesAsync();
             await InvalidateOtpAsync(role, email);
 
@@ -285,79 +235,58 @@ namespace GreenMind.Service.Authentication.Services
         public async Task<AuthResponseDto> GoogleLoginAsync(string token, string role)
         {
             role = NormalizeRole(role);
-
             if (!role.Equals("User", StringComparison.OrdinalIgnoreCase))
-                throw new AuthHttpException(400, "Google login is allowed for User only.");
+                throw new AuthHttpException(400, "Google login allowed for User only.");
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(token);
             var email = payload.Email.Trim().ToLower();
-            var name = string.IsNullOrWhiteSpace(payload.Name) ? "User" : payload.Name;
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email.ToLower() == email);
-
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email);
             if (user == null)
             {
                 user = new User
                 {
                     Email = email,
-                    Name = name,
+                    Name = payload.Name ?? "User",
                     PasswordHash = _hasher.Hash(Guid.NewGuid().ToString())
                 };
-
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
             }
 
-            var jwtToken = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name);
+            // Log activity for Social Login
+            _context.UserActivityLogs.Add(new UserActivityLog { UserName = user.Name, ActionType = "Login", StartedAt = DateTime.UtcNow });
+            await _context.SaveChangesAsync();
 
-            return new AuthResponseDto
-            {
-                Token = jwtToken,
-                UserName = user.Name,
-                Role = "User"
-            };
+            return new AuthResponseDto { Token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name), UserName = user.Name, Role = "User" };
         }
 
         public async Task<AuthResponseDto> FacebookLoginAsync(string token, string role)
         {
             role = NormalizeRole(role);
-
             if (!role.Equals("User", StringComparison.OrdinalIgnoreCase))
-                throw new AuthHttpException(400, "Facebook login is allowed for User only.");
+                throw new AuthHttpException(400, "Facebook login allowed for User only.");
 
             var result = await _socialAuthService.VerifyFacebookAsync(token);
-            var email = result.Email?.Trim().ToLower();
-            var name = string.IsNullOrWhiteSpace(result.Name) ? "User" : result.Name;
+            var email = result.Email?.Trim().ToLower() ?? $"{Guid.NewGuid():N}@facebook.local";
 
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                email = $"{Guid.NewGuid():N}@facebook.local";
-            }
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email.ToLower() == email);
-
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email);
             if (user == null)
             {
                 user = new User
                 {
                     Email = email,
-                    Name = name,
+                    Name = result.Name ?? "User",
                     PasswordHash = _hasher.Hash(Guid.NewGuid().ToString())
                 };
-
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
             }
 
-            var jwtToken = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name);
-            return new AuthResponseDto
-            {
-                Token = jwtToken,
-                UserName = user.Name,
-                Role = "User"
-            };
+            _context.UserActivityLogs.Add(new UserActivityLog { UserName = user.Name, ActionType = "Login", StartedAt = DateTime.UtcNow });
+            await _context.SaveChangesAsync();
+
+            return new AuthResponseDto { Token = _jwtService.GenerateToken(user.Email, "User", user.Id, user.Name), UserName = user.Name, Role = "User" };
         }
     }
 }

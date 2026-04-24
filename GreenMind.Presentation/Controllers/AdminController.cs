@@ -30,7 +30,6 @@ namespace GreenMindAI.Controllers
         [HttpPut("products/{id}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromForm] CreateUpdateProductDto dto)
         {
-            // مفيش داعي للـ Guid.Parse خالص دلوقتي
             var result = await _service.UpdateProductAsync(id, dto);
             return Ok(result);
         }
@@ -38,7 +37,6 @@ namespace GreenMindAI.Controllers
         [HttpDelete("products/{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            // بنمرر الـ id الـ int مباشرة للـ service
             await _service.DeleteProductAsync(id);
             return Ok(new { message = "Product deleted successfully" });
         }

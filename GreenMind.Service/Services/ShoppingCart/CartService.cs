@@ -14,7 +14,6 @@ namespace GreenMind.Service.Services.ShoppingCart
             _context = context;
         }
 
-        // 1. عرض السلة بالمنتجات (عشان الجدول في الـ UI)
         public async Task<Cart?> GetCartByUserIdAsync(int userId)
         {
             return   await _context.Carts 
@@ -23,7 +22,6 @@ namespace GreenMind.Service.Services.ShoppingCart
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
-        // 2. إضافة منتج (بيزود الكمية لو المنتج موجود أصلاً)
         public async Task AddItemToCartAsync(int userId, int productId, int quantity)
         {
             var cart = await _context.Carts.Include(c => c.Items)
@@ -55,7 +53,6 @@ namespace GreenMind.Service.Services.ShoppingCart
             await _context.SaveChangesAsync();
         }
 
-        // 3. حذف منتج (علامة الـ X في الصورة)
         public async Task RemoveItemFromCartAsync(int cartItemId)
         {
             var item = await _context.CartItems.FindAsync(cartItemId);
@@ -66,7 +63,6 @@ namespace GreenMind.Service.Services.ShoppingCart
             }
         }
 
-        // 4. تحديث الكمية (أزرار + و - في الـ UI)
         public async Task UpdateQuantityAsync(int cartItemId, int newQuantity)
         {
             var item = await _context.CartItems.FindAsync(cartItemId);
@@ -77,7 +73,6 @@ namespace GreenMind.Service.Services.ShoppingCart
             }
         }
 
-        // 5. مسح السلة (زرار Clear Shopping Cart)
         public async Task ClearCartAsync(int userId)
         {
             var cart = await _context.Carts.Include(c => c.Items)
@@ -90,7 +85,6 @@ namespace GreenMind.Service.Services.ShoppingCart
             }
         }
 
-        // 6. حساب الإجمالي (للمربع البني Order Summary)
         public async Task<decimal> GetCartTotalAsync(int userId)
         {
             var cart = await _context.Carts

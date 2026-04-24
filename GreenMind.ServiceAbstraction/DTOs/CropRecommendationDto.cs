@@ -6,32 +6,32 @@ namespace GreenMind.ServiceAbstraction.DTOs
     public class CropRecommendationDto
     {
         [Required]
-        [Range(0, 120)] // تعديل المدى بناءً على ريكوايرمنت رحاب
-        [JsonPropertyName("N")] // لازم يكون حرف N كبير كما هو مطلوب للموديل
+        [Range(0, 120)] 
+        [JsonPropertyName("N")] 
         public double Nitrogen { get; set; }
 
         [Required]
-        [Range(0, 50)] // تعديل المدى بناءً على ريكوايرمنت رحاب
-        [JsonPropertyName("P")] // لازم يكون حرف P كبير
+        [Range(0, 50)] 
+        [JsonPropertyName("P")] 
         public double Phosphorus { get; set; }
 
         [Required]
         [Range(0, 200)]
-        [JsonPropertyName("K")] // لازم يكون حرف K كبير
+        [JsonPropertyName("K")] 
         public double Potassium { get; set; }
 
         [Required]
-        [Range(7.0, 8.5)] // الالتزام بالمدى المطلوب لضمان عدم حدوث Error 422
+        [Range(7.0, 8.5)] 
         [JsonPropertyName("ph")]
         public double PH { get; set; }
 
         [Required]
-        [Range(10, 45)] // المدى المطلوب للحرارة
+        [Range(10, 45)] 
         [JsonPropertyName("temperature")]
         public double Temperature { get; set; }
 
         [Required]
-        [Range(20, 80)] // المدى المطلوب للرطوبة
+        [Range(20, 80)] 
         [JsonPropertyName("humidity")]
         public double Humidity { get; set; }
 
@@ -41,7 +41,7 @@ namespace GreenMind.ServiceAbstraction.DTOs
         public int Month { get; set; }
 
         [Required]
-        // الـ Soil Type لازم يتبعت حروف صغيرة ومن اللستة المحددة
+        
         [JsonPropertyName("soil_type")]
         public string? SoilType { get; set; }
 

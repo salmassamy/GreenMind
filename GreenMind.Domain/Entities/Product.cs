@@ -8,12 +8,12 @@ namespace GreenMind.Domain.Entities
     public class Product
     {
         [Key]
-        public int Id { get; set; } // رجعناه int عادي
+        public int Id { get; set; } 
 
         [Required]
         public string Name { get; set; } = string.Empty;
 
-        public string? Desc { get; set; } // استخدمي خاصية واحدة للوصف لعدم التكرار
+        public string? Desc { get; set; } 
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
@@ -22,11 +22,10 @@ namespace GreenMind.Domain.Entities
 
         public int StockQuantity { get; set; }
 
-        // Foreign Key
         public int CategoryId { get; set; }
 
-        // Navigation Properties
         public Category? Category { get; set; }
+        public bool IsAdminProduct { get; set; }
         public ICollection<CartItem> CartItems { get; set; } = new HashSet<CartItem>();
     }
 }

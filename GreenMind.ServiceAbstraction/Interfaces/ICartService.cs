@@ -15,5 +15,6 @@ namespace GreenMind.ServiceAbstraction.Interfaces
         Task UpdateQuantityAsync(int cartItemId, int newQuantity);
         Task ClearCartAsync(int userId);
         Task<decimal> GetCartTotalAsync(int userId);
+      
     }
 }

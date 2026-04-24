@@ -14,5 +14,6 @@ namespace GreenMind.ServiceAbstraction.DTOs
         public decimal Price { get; set; }
         public string? Desc { get; set; } 
         public string Img { get; set; } = null!;
+
     }
 }

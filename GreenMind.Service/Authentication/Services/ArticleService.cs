@@ -56,7 +56,6 @@ namespace GreenMind.Service.Services
                 Description = Limit(featured.Description),
                 ImageUrl = featured.ImageUrl,
 
-                // 🔥 لو ExternalUrl موجود استخدمه، غير كده internal link
                 Url = !string.IsNullOrEmpty(featured.ExternalUrl)
                     ? featured.ExternalUrl
                     : $"/articles/{featured.Id}"

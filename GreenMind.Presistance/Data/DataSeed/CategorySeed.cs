@@ -12,12 +12,11 @@ namespace GreenMind.Presistance.DataSeed
             builder.HasData(
                 new Category { Id = 1, Name = "Seeds", CreatedDate = new DateTime(2026, 1, 1) },
                 new Category { Id = 2, Name = "Soil", CreatedDate = new DateTime(2026, 1, 1) },
-                new Category { Id = 3, Name = "Tools", CreatedDate = new DateTime(2026, 1, 1) },
-                new Category { Id = 4, Name = "Fertilizers", CreatedDate = new DateTime(2026, 1, 1) }
+                new Category { Id = 3, Name = "Tools", CreatedDate = new DateTime(2026, 1, 1) }
+             
             );
         }
 
-        // ضيفي الميثود دي عشان أخطاء الـ Program.cs تختفي
         public static async Task SeedAsync(ApplicationDbContext context)
         {
             if (!await context.Categories.AnyAsync())
@@ -27,7 +26,7 @@ namespace GreenMind.Presistance.DataSeed
                     new Category { Name = "Seeds", CreatedDate = new DateTime(2026, 1, 1) },
                     new Category { Name = "Soil", CreatedDate = new DateTime(2026, 1, 1) },
                     new Category { Name = "Tools", CreatedDate = new DateTime(2026, 1, 1) },
-                    new Category { Name = "Fertilizers", CreatedDate = new DateTime(2026, 1, 1) }
+                 
                 };
                 await context.Categories.AddRangeAsync(categories);
                 await context.SaveChangesAsync();

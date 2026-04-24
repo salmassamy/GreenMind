@@ -57,8 +57,8 @@ namespace GreenMindAI.Controllers
             int userId = int.Parse(userIdClaim.Value);
             */
 
-            // 2. هنستخدم userId ثابت (1) للتجربة زي ما إنتي عاملة
-            int userId = 1;
+            // 2. هنستخدم userId ثابت (6   ) للتجربة زي ما إنتي عاملة
+            int userId = 6;
 
             // 3. بنسحب البيانات من الـ request DTO اللي جاي من الفرونت إند
             await _cartService.AddItemToCartAsync(userId, request.ProductId, request.Quantity);
@@ -96,7 +96,7 @@ namespace GreenMindAI.Controllers
             */
 
             // 2. تثبيت الـ userId على رقم 1 للتجربة
-            int userId = 1;
+            int userId = 6;
 
             await _cartService.ClearCartAsync(userId);
 

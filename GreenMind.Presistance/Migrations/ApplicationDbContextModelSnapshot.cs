@@ -31,7 +31,6 @@ namespace GreenMind.Presistance.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("City")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
@@ -41,11 +40,9 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Street")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
@@ -70,15 +67,12 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -89,7 +83,7 @@ namespace GreenMind.Presistance.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedDate = new DateTime(2026, 4, 16, 4, 17, 5, 377, DateTimeKind.Local).AddTicks(1141),
+                            CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin01@gmail.com",
                             Name = "SalmaAdmin",
                             Password = "AQAAAAEAACcQAAAAEBy9Mjk9Z3lR5jL2PqX9H3L0T4M5Z6X7qG9zF9vL2K8W7M5Z6X7"
@@ -108,22 +102,18 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExternalUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("bit");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -194,7 +184,6 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -219,12 +208,6 @@ namespace GreenMind.Presistance.Migrations
                             Id = 3,
                             CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Tools"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Fertilizers"
                         });
                 });
 
@@ -239,8 +222,13 @@ namespace GreenMind.Presistance.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsFromUser")
+                        .HasColumnType("bit");
+
                     b.Property<string>("MessageText")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SessionId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
@@ -280,18 +268,15 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PaymentMethod")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("ShippingCost")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("SubTotal")
@@ -362,7 +347,6 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Method")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("OrderId")
@@ -393,11 +377,12 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Img")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsAdminProduct")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
@@ -418,7 +403,8 @@ namespace GreenMind.Presistance.Migrations
                             Id = 1,
                             CategoryId = 1,
                             Desc = "Refreshing aroma, vibrant leaves. Perfect for teas, cooking, and home gardens. Easy to grow!",
-                            Img = "/images/mint seeds.png",
+                            Img = "/images/mint-seeds.png",
+                            IsAdminProduct = false,
                             Name = "Premium Mint Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -429,6 +415,7 @@ namespace GreenMind.Presistance.Migrations
                             CategoryId = 1,
                             Desc = "Grow coffee at home with premium seeds. Cultivate aromatic beans for your daily brew. Perfect for enthusiasts.",
                             Img = "/images/coffee.png",
+                            IsAdminProduct = false,
                             Name = "Coffee Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -439,6 +426,7 @@ namespace GreenMind.Presistance.Migrations
                             CategoryId = 1,
                             Desc = "Peppery and aromatic. Fast-growing, easy care. Perfect for pickling, fish, and salads.",
                             Img = "/images/s.png",
+                            IsAdminProduct = false,
                             Name = "Premium Dill Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -449,6 +437,7 @@ namespace GreenMind.Presistance.Migrations
                             CategoryId = 1,
                             Desc = "Fresh, sweet garden peas. Easy to grow, tender, and delicious pods. Enjoy homegrown peas in 60-70 days.",
                             Img = "/images/pea.png",
+                            IsAdminProduct = false,
                             Name = "Premium Pea Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -459,6 +448,7 @@ namespace GreenMind.Presistance.Migrations
                             CategoryId = 1,
                             Desc = "High yield, excellent taste. Ideal for paddy, disease resistant. Perfect for the Egyptian climate.",
                             Img = "/images/ri.png",
+                            IsAdminProduct = false,
                             Name = "Premium Rice Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -469,6 +459,7 @@ namespace GreenMind.Presistance.Migrations
                             CategoryId = 1,
                             Desc = "Crisp, peppery leaves. Ideal for salads and sandwiches. Fast-growing and rich in vitamins.",
                             Img = "/images/arugula.png",
+                            IsAdminProduct = false,
                             Name = "Premium Arugula Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -478,7 +469,8 @@ namespace GreenMind.Presistance.Migrations
                             Id = 7,
                             CategoryId = 1,
                             Desc = "Rich in protein and fiber. Ideal for healthy Egyptian cooking. Grow fresh beans for soups and stews.",
-                            Img = "/images/white bean.png",
+                            Img = "/images/white-bean.png",
+                            IsAdminProduct = false,
                             Name = "Premium White Bean Seeds",
                             Price = 50m,
                             StockQuantity = 0
@@ -488,7 +480,8 @@ namespace GreenMind.Presistance.Migrations
                             Id = 8,
                             CategoryId = 2,
                             Desc = "8 Quarts formula. Specialized for seed germination and cuttings. Approved for organic growing.",
-                            Img = "/images/organic seed.png",
+                            Img = "/images/organic-seed.png",
+                            IsAdminProduct = false,
                             Name = "Organic Seed Starting",
                             Price = 100m,
                             StockQuantity = 0
@@ -499,6 +492,7 @@ namespace GreenMind.Presistance.Migrations
                             CategoryId = 2,
                             Desc = "Available in .75 or 1.5 cubic feet. Formulated for herbs, vegetables, and indoor plants.",
                             Img = "/images/P.png",
+                            IsAdminProduct = false,
                             Name = "Potting Mix",
                             Price = 100m,
                             StockQuantity = 0
@@ -508,7 +502,8 @@ namespace GreenMind.Presistance.Migrations
                             Id = 10,
                             CategoryId = 2,
                             Desc = "1 Cubic foot. Formulated for flower beds, vegetable gardens, trees, and shrubs. For in-ground use.",
-                            Img = "/images/garden soil.png",
+                            Img = "/images/garden-soil.png",
+                            IsAdminProduct = false,
                             Name = "Garden Soil",
                             Price = 100m,
                             StockQuantity = 0
@@ -518,7 +513,8 @@ namespace GreenMind.Presistance.Migrations
                             Id = 11,
                             CategoryId = 2,
                             Desc = "Enriched with Humus. Available in .75 cubic feet bags for nutrient-rich soil.",
-                            Img = "/images/composted manure.png",
+                            Img = "/images/composted-manure.png",
+                            IsAdminProduct = false,
                             Name = "Composted Manure",
                             Price = 100m,
                             StockQuantity = 0
@@ -528,7 +524,8 @@ namespace GreenMind.Presistance.Migrations
                             Id = 12,
                             CategoryId = 2,
                             Desc = "1 Cubic foot. Ideal for container gardens, hanging baskets, and window boxes.",
-                            Img = "/images/potting soil.png",
+                            Img = "/images/potting-soil.png",
+                            IsAdminProduct = false,
                             Name = "Potting Soil",
                             Price = 100m,
                             StockQuantity = 0
@@ -537,8 +534,8 @@ namespace GreenMind.Presistance.Migrations
                         {
                             Id = 13,
                             CategoryId = 3,
-                            Desc = "High quality digging tool.",
                             Img = "/images/Rectangle.png",
+                            IsAdminProduct = false,
                             Name = "Digging Fork",
                             Price = 200m,
                             StockQuantity = 0
@@ -547,8 +544,8 @@ namespace GreenMind.Presistance.Migrations
                         {
                             Id = 14,
                             CategoryId = 3,
-                            Desc = "Durable garden shovel.",
                             Img = "/images/shovel.png",
+                            IsAdminProduct = false,
                             Name = "Shovel",
                             Price = 200m,
                             StockQuantity = 0
@@ -557,8 +554,8 @@ namespace GreenMind.Presistance.Migrations
                         {
                             Id = 15,
                             CategoryId = 3,
-                            Desc = "Precision digging tool.",
                             Img = "/images/T.png",
+                            IsAdminProduct = false,
                             Name = "Square-Point Shovel",
                             Price = 200m,
                             StockQuantity = 0
@@ -567,8 +564,8 @@ namespace GreenMind.Presistance.Migrations
                         {
                             Id = 16,
                             CategoryId = 3,
-                            Desc = "Easy-pour watering can.",
                             Img = "/images/watering.png",
+                            IsAdminProduct = false,
                             Name = "Watering Can",
                             Price = 200m,
                             StockQuantity = 0
@@ -577,8 +574,8 @@ namespace GreenMind.Presistance.Migrations
                         {
                             Id = 17,
                             CategoryId = 3,
-                            Desc = "Small hand tool for soil.",
                             Img = "/images/Hand.png",
+                            IsAdminProduct = false,
                             Name = "Hand Cultivator",
                             Price = 200m,
                             StockQuantity = 0
@@ -587,8 +584,8 @@ namespace GreenMind.Presistance.Migrations
                         {
                             Id = 18,
                             CategoryId = 3,
-                            Desc = "Versatile round shovel.",
-                            Img = "/images/point Shovel.png",
+                            Img = "/images/point-Shovel.png",
+                            IsAdminProduct = false,
                             Name = "Round-Point Shovel",
                             Price = 200m,
                             StockQuantity = 0
@@ -604,11 +601,22 @@ namespace GreenMind.Presistance.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Position")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
@@ -643,18 +651,15 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -677,18 +682,15 @@ namespace GreenMind.Presistance.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Date")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Text")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Type")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
@@ -710,7 +712,6 @@ namespace GreenMind.Presistance.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ActionType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("EndedAt")
@@ -720,7 +721,6 @@ namespace GreenMind.Presistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -733,7 +733,7 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.User", "User")
                         .WithMany("Addresses")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -744,7 +744,7 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.User", "User")
                         .WithOne("Cart")
                         .HasForeignKey("GreenMind.Domain.Entities.Cart", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -755,13 +755,13 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.Cart", "Cart")
                         .WithMany("Items")
                         .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("GreenMind.Domain.Entities.Product", "Product")
                         .WithMany("CartItems")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Cart");
@@ -774,7 +774,7 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -791,7 +791,7 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Address");
@@ -804,13 +804,13 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("GreenMind.Domain.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -823,7 +823,7 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.Order", "Order")
                         .WithMany()
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -834,7 +834,7 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -845,13 +845,13 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("GreenMind.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -864,7 +864,7 @@ namespace GreenMind.Presistance.Migrations
                     b.HasOne("GreenMind.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");

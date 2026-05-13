@@ -22,11 +22,9 @@ namespace GreenMind.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto dto)
         {
-            // ❌ Null check
             if (dto == null)
                 return BadRequest("Invalid request body");
 
-            // ✅ Empty / whitespace validation
             if (string.IsNullOrWhiteSpace(dto.Name) ||
                 string.IsNullOrWhiteSpace(dto.Phone) ||
                 string.IsNullOrWhiteSpace(dto.Email) ||
@@ -34,7 +32,7 @@ namespace GreenMind.API.Controllers
             {
                 return BadRequest("Name, Phone, Email and Message are required");
             }
-            // ❌ Email format validation
+
             var emailRegex = @"^[^\s@]+@[^\s@]+\.[^\s@]+$";
             if (!Regex.IsMatch(dto.Email, emailRegex))
             {
@@ -59,12 +57,11 @@ namespace GreenMind.API.Controllers
             }
         }
 
-        // GET /api/reviews?limit=3
+       
         [HttpGet]
-        public async Task<IActionResult> GetReviews([FromQuery] int limit = 3)
+        public async Task<IActionResult> GetReviews([FromQuery] int? limit)
         {
-            // ❌ حماية من قيم غلط
-            if (limit <= 0)
+            if (limit.HasValue && limit <= 0)
                 limit = 3;
 
             var result = await _service.GetReviewsAsync(limit);

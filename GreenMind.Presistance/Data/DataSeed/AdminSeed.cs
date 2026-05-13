@@ -12,19 +12,20 @@ namespace GreenMind.Presistance.Data.DataSeed
     {
         public static async Task SeedAsync(ApplicationDbContext context, IPasswordHasherService hasher)
         {
-            var adminEmail = "admin@greenmind.com";
+            // استخدمي الإيميل اللي إحنا لسه مجربينه ونفع
+            var adminEmail = "testadmin@gmail.com";
 
-            // 2. AnyAsync محتاجة using Microsoft.EntityFrameworkCore فوق
             var exists = await context.Admins.AnyAsync(a => a.Email == adminEmail);
 
             if (!exists)
             {
                 var admin = new Admin
                 {
-                    // 3. حل مشاكل الـ Null بوضع قيم افتراضية
-                    Name = "Super Admin",
+                    Name = "Test Admin",
                     Email = adminEmail,
-                    Password = hasher.Hash("Admin@123")
+                    // تأكدي إن الميثود اسمها HashPassword أو Hash حسب الـ Interface عندك
+                    Password = hasher.Hash("Password123!"),
+                    CreatedDate = DateTime.Now // ضيفي دي عشان الجدول ميزعلش
                 };
 
                 await context.Admins.AddAsync(admin);

@@ -18,18 +18,15 @@ namespace GreenMind.ServiceAbstraction.DTOs
         [JsonPropertyName("status")]
         public string Status { get; set; } = "success";
 
-        // حقل التحليل (يظهر فقط لو الـ AI بعته)
         [JsonPropertyName("analysis")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public AnalysisResult? Analysis { get; set; }
 
-        // حقل سؤال المتابعة (يظهر فقط لو الـ AI بعته)
         [JsonPropertyName("follow_up_question")]
        // [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? FollowUpQuestion { get; set; }
     }
 
-    // الكلاس الخاص بتفاصيل التحليل
     public class AnalysisResult
     {
         [JsonPropertyName("type")]

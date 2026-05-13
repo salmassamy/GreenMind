@@ -34,9 +34,8 @@ namespace GreenMindAI.Controllers
             var result = await _userService.GetProfileAsync(GetUserId());
             return Ok(result);
         }
-
         [HttpPut("profile")]
-        public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileDto dto)
+        public async Task<IActionResult> UpdateProfile([FromForm] UpdateUserProfileDto dto)
         {
             var result = await _userService.UpdateProfileAsync(GetUserId(), dto);
             return Ok(new

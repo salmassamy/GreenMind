@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO; // ضفت دي عشان الـ Path يشتغل
 
 namespace GreenMind.Service.Authentication.Services
 {
@@ -36,39 +37,40 @@ namespace GreenMind.Service.Authentication.Services
                 Email = user.Email,
                 Phone = user.Phone,
                 Gender = user.Gender,
-                ProfilePic = user.ProfilePic
+                // التعديل هنا: نبعت المسار كامل لو الصورة موجودة
+                ProfilePic = !string.IsNullOrEmpty(user.ProfilePic)
+                    ? $"https://greenmind.runasp.net/images/profiles/{user.ProfilePic}"
+                    : null
             };
         }
 
         public async Task<UserProfileDto> UpdateProfileAsync(int userId, UpdateUserProfileDto dto)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
-            if (user == null)
-                throw new Exception("User not found");
-
-            if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new Exception("Name is required");
-
-            if (!string.IsNullOrWhiteSpace(dto.Gender) &&
-                dto.Gender != "Male" &&
-                dto.Gender != "Female")
-                throw new Exception("Gender must be Male or Female");
-
-            if (!string.IsNullOrWhiteSpace(dto.Phone))
-            {
-                var phoneExists = await _context.Users
-                    .AnyAsync(x => x.Id != userId && x.Phone == dto.Phone);
-
-                if (phoneExists)
-                    throw new Exception("Phone already exists");
-            }
+            if (user == null) throw new Exception("User not found");
 
             user.Name = dto.Name.Trim();
             user.Phone = dto.Phone?.Trim();
             user.Gender = dto.Gender?.Trim();
-            user.ProfilePic = dto.ProfilePic?.Trim();
+
+            if (dto.ProfilePic != null && dto.ProfilePic.Length > 0)
+            {
+                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "profiles");
+
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
+                var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(dto.ProfilePic.FileName)}";
+                var filePath = Path.Combine(folderPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.ProfilePic.CopyToAsync(stream);
+                }
+
+                user.ProfilePic = fileName;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -78,7 +80,10 @@ namespace GreenMind.Service.Authentication.Services
                 Email = user.Email,
                 Phone = user.Phone,
                 Gender = user.Gender,
-                ProfilePic = user.ProfilePic
+                // التعديل هنا برضه عشان رنا تشوف الصورة فوراً بعد التحديث
+                ProfilePic = !string.IsNullOrEmpty(user.ProfilePic)
+                    ? $"https://greenmind.runasp.net/images/profiles/{user.ProfilePic}"
+                    : null
             };
         }
 

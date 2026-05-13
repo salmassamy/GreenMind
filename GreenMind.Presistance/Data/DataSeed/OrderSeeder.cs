@@ -1,5 +1,9 @@
 ﻿using GreenMind.Domain.Entities;
 using GreenMind.Presistance.Data.DbContexts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace GreenMind.DataSeed
 {
@@ -11,7 +15,7 @@ namespace GreenMind.DataSeed
                 return;
 
             var user = context.Users.FirstOrDefault();
-            var address = context.Addresses.FirstOrDefault(); // 👈 مهم جدًا
+            var address = context.Addresses.FirstOrDefault();
 
             if (user == null || address == null)
                 return;
@@ -21,11 +25,12 @@ namespace GreenMind.DataSeed
                 new Order
                 {
                     UserId = user.Id,
-                    AddressId = address.Id, // 👈 الحل الأساسي
+                    AddressId = address.Id,
                     Phone = "01000000000",
                     OrderDate = DateTime.UtcNow.AddDays(-1),
                     TotalAmount = 150,
-                    Status = "Pending"
+                    // ✅ التعديل هنا: نستخدم الـ Enum بدل الـ string
+                    Status = OrderStatus.Pending
                 },
                 new Order
                 {
@@ -34,7 +39,8 @@ namespace GreenMind.DataSeed
                     Phone = "01000000000",
                     OrderDate = DateTime.UtcNow.AddHours(-5),
                     TotalAmount = 300,
-                    Status = "Completed"
+                    // ✅ التعديل هنا: نستخدم القيمة الصح من الـ Enum
+                    Status = OrderStatus.Delivered
                 },
                 new Order
                 {
@@ -43,7 +49,8 @@ namespace GreenMind.DataSeed
                     Phone = "01000000000",
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = 450,
-                    Status = "Shipped"
+                    // ✅ التعديل هنا: نستخدم القيمة الصح من الـ Enum
+                    Status = OrderStatus.Shipped
                 }
             };
 

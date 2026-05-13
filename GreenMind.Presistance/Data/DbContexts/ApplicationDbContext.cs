@@ -34,18 +34,15 @@ namespace GreenMind.Presistance.Data.DbContexts
         {
             base.OnModelCreating(modelBuilder);
 
-            // ================= 1. التعديلات العامة لكل الجداول (التعديل الجديد) =================
             var allEntities = modelBuilder.Model.GetEntityTypes();
 
             foreach (var entityType in allEntities)
             {
-                // أ. جعل كل الحقول النصية (string) تسمح بـ NULL بشكل افتراضي
                 foreach (var property in entityType.GetProperties().Where(p => p.ClrType == typeof(string)))
                 {
                     property.IsNullable = true;
                 }
 
-                // ب. منع الـ Cascade Delete لكل العلاقات (Restrict) للحماية من حذف البيانات بالخطأ
                 var foreignKeys = entityType.GetForeignKeys();
                 foreach (var fk in foreignKeys)
                 {
@@ -53,9 +50,6 @@ namespace GreenMind.Presistance.Data.DbContexts
                 }
             }
 
-            // ================= 2. إعدادات خاصة وتصحيحات يدوية =================
-
-            // إضافة الأدمن أوتوماتيكياً (Seeding)
             modelBuilder.Entity<Admin>().HasData(new Admin
             {
                 Id = 1,
@@ -65,14 +59,12 @@ namespace GreenMind.Presistance.Data.DbContexts
                 CreatedDate = new DateTime(2024, 1, 1)
             });
 
-            // حل مشكلة الـ Cascade Path لجدول الـ Order بشكل خاص (لو لزم الأمر)
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Address)
                 .WithMany()
                 .HasForeignKey(o => o.AddressId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // حل رسايل الـ Warnings وتوحيد الـ Decimal
             foreach (var property in modelBuilder.Model.GetEntityTypes()
                         .SelectMany(t => t.GetProperties())
                         .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
@@ -80,12 +72,9 @@ namespace GreenMind.Presistance.Data.DbContexts
                 property.SetColumnType("decimal(18,2)");
             }
 
-            // ================= 3. تفعيل ملفات الـ Seed (البيانات الجاهزة) =================
             modelBuilder.ApplyConfiguration(new CategorySeed());
             modelBuilder.ApplyConfiguration(new ProductSeed());
 
-            //// السطر ده اللي كان ناقص عشان المقالات تظهر
-            //modelBuilder.ApplyConfiguration(new ArticleSeeder());
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

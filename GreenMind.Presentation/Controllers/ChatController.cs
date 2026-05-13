@@ -1,8 +1,8 @@
-﻿using GreenMind.ServiceAbstraction.DTOs;
+﻿using GreenMind.Service;
+using GreenMind.ServiceAbstraction.DTOs;
 using GreenMind.ServiceAbstraction.Interfaces;
-using GreenMind.Service;
-using Microsoft.AspNetCore.Mvc;
 using GreenMind.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GreenMind.Controllers
 {
@@ -12,7 +12,8 @@ namespace GreenMind.Controllers
     {
         private readonly IChatService _chatService;
 
-        private readonly string _aiBaseUrl = "https://overnight-substance-tiptop.ngrok-free.dev";
+        // الرابط بتاع Hugging Face
+        private readonly string _aiBaseUrl = "https://shroukyasser-greenmind-chatbot.hf.space";
 
         public ChatController(IChatService chatService)
         {
@@ -22,6 +23,18 @@ namespace GreenMind.Controllers
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
         {
+            // 1. معالجة الـ SessionId: لو "string" أو فاضي خليه null عشان السيرفس تعمل GUID جديد
+            if (request.SessionId == "string" || string.IsNullOrWhiteSpace(request.SessionId))
+            {
+                request.SessionId = null;
+            }
+
+            // 2. التحقق من وجود رسالة (Validation بسيط)
+            if (string.IsNullOrWhiteSpace(request.Message))
+            {
+                return BadRequest("الرسالة لا يمكن أن تكون فارغة.");
+            }
+
             var response = await _chatService.ProcessMessageAsync(request, _aiBaseUrl);
             return Ok(response);
         }
@@ -29,6 +42,9 @@ namespace GreenMind.Controllers
         [HttpGet("history/{userId}")]
         public IActionResult GetHistory(string userId)
         {
+            // التأكد إن الـ userId مبعوت صح
+            if (string.IsNullOrWhiteSpace(userId)) return BadRequest("UserId مطلوب.");
+
             var response = _chatService.GetUserHistory(userId);
             return Ok(response);
         }
@@ -39,9 +55,14 @@ namespace GreenMind.Controllers
             var response = _chatService.CreateNewChat(request.UserId);
             return Ok(response);
         }
+
         [HttpGet("generate-title/{sessionId}")]
         public async Task<IActionResult> GenerateTitle(string sessionId)
         {
+            // لو الـ sessionId جاي بكلمة "string" من Swagger مش هنبعته للسيرفس
+            if (string.IsNullOrWhiteSpace(sessionId) || sessionId == "string")
+                return BadRequest("SessionId غير صحيح.");
+
             var result = await _chatService.GenerateChatTitleAsync(sessionId, _aiBaseUrl);
             return Ok(result);
         }

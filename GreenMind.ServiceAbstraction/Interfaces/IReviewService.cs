@@ -8,6 +8,6 @@ namespace GreenMind.ServiceAbstraction.Interfaces
     {
         Task AddReviewAsync(CreateReviewDto dto);
 
-        Task<List<ReviewResponseDto>> GetReviewsAsync(int limit);
+        Task<List<ReviewResponseDto>> GetReviewsAsync(int? limit);
     }
 }

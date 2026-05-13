@@ -27,12 +27,13 @@ var builder = WebApplication.CreateBuilder(args);
 // =========================
 builder.Services.AddCors(options =>
 {
-    // السماح لكل المصادر (للتطوير)
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              // ضيفي السطر ده هنا بالظبط عشان الـ ngrok header
+              .WithExposedHeaders("ngrok-skip-browser-warning");
     });
 });
 
@@ -98,8 +99,9 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-
-builder.Services.AddHttpClient<IChatService, ChatService>();
+builder.Services.AddHttpClient<IChatService, ChatService>(client => {
+    client.Timeout = TimeSpan.FromSeconds(100);
+});
 
 // =========================
 // 🔑 JWT Authentication
@@ -134,7 +136,6 @@ var app = builder.Build();
 // =========================
 // 🔥 Data Seeding (هنا استخدمنا الـ AdminSeed اللي بيشفر الباسورد)
 // =========================
-//app.MapGet("/", () => "API is running");
 
 
 using (var scope = app.Services.CreateScope())
@@ -145,7 +146,6 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ApplicationDbContext>();
         var hasher = services.GetRequiredService<IPasswordHasherService>();
 
-        // ده الأهم: بيضيف الأدمن وبيهيش الباسورد صح
         await AdminSeed.SeedAsync(context, hasher);
 
         if (!context.Articles.Any())
@@ -165,21 +165,21 @@ using (var scope = app.Services.CreateScope())
 // =========================
 // 🚀 Middleware Pipeline
 // =========================
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI(c => {
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "GreenMind API v1");
+    c.RoutePrefix = string.Empty; 
+});
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // بيسمح بالوصول لملفات الصور في wwwroot
+app.UseStaticFiles();
 
-app.UseCors("AllowAll"); // بيفتح الـ CORS للطلبات الخارجية
+// 1. الجزء بتاع الـ CORS يفضل زي ما هو فوق
+app.UseCors("AllowAll");
 
-// المكان الصح للـ Headers اليدوية عشان تضمن إنها تتطبق على كل حاجة
+// 2. الجزء اليدوي خليه كدة بس (عشان الصور والملفات)
 app.Use((context, next) =>
 {
-    context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
     context.Response.Headers.Append("Cross-Origin-Resource-Policy", "cross-origin");
     return next();
 });
@@ -196,6 +196,6 @@ var localizationOptions = new RequestLocalizationOptions()
 
 app.UseRequestLocalization(localizationOptions);
 
-app.MapControllers(); // خلي الـ MapControllers دايماً في الآخر قبل الـ Run
+app.MapControllers(); 
 
 app.Run();

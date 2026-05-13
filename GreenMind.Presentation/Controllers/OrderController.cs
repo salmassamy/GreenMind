@@ -6,16 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GreenMind.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-   // [Authorize] 
+    [Authorize] 
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -28,17 +26,15 @@ namespace GreenMind.Presentation.Controllers
         [HttpPost("checkout")]
         public async Task<IActionResult> Checkout(CheckoutRequestDto checkoutDto)
         {
-            // 1. عطلنا الجزء اللي بيسأل على التوكن واللوجن مؤقتاً
-            // var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            // if (userIdClaim == null)
-            //    return Unauthorized();
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-            // 2. ثبتنا الـ ID برقم يوزر موجود عندك في الداتا بيز (وليكن 6)
-            int userId = 6;
+            if (userIdClaim == null)
+                return Unauthorized(new { message = "You must be logged in to place an order." });
+
+            int userId = int.Parse(userIdClaim.Value);
 
             try
             {
-                // 3. الميثود هتشتغل عادي بالـ ID رقم 6 
                 var orderId = await _orderService.PlaceOrderAsync(userId, checkoutDto);
 
                 return Ok(new
@@ -52,11 +48,11 @@ namespace GreenMind.Presentation.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
         [HttpGet("my-orders")]
         public async Task<IActionResult> GetMyOrders()
         {
-            
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null)
                 return Unauthorized();

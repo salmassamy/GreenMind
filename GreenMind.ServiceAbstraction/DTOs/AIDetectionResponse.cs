@@ -1,14 +1,28 @@
-﻿namespace GreenMind.ServiceAbstraction.DTOs
+﻿using System.Text.Json.Serialization;
+
+public class AIDetectionResponse
 {
-    public class AIDetectionResponse
-    {
-        public string? Plant { get; set; }
-        public string? Disease { get; set; }
-        public string? Severity { get; set; }
-        public string? Pathogen_type { get; set; }
-        public List<string>? Symptoms { get; set; } = [];
-        public List<string>? Prevention { get; set; } = [];
-        public List<string>? Treatment { get; set; } = [];
-        public List<string>? care_tips { get; set; } = [];
-    }
+    [JsonPropertyName("plant")]
+    public string? Plant { get; set; }
+
+    [JsonPropertyName("disease")]
+    public string? Disease { get; set; }
+
+    [JsonPropertyName("severity")]
+    public string? Severity { get; set; }
+
+    [JsonPropertyName("pathogen_type")]
+    public string? Pathogen_type { get; set; }
+
+    [JsonPropertyName("symptoms")]
+    public List<string>? Symptoms { get; set; }
+
+    [JsonPropertyName("prevention")]
+    public List<string>? Prevention { get; set; }
+
+    [JsonPropertyName("treatment")]
+    public List<string>? Treatment { get; set; }
+
+    [JsonPropertyName("care_tips")]
+    public List<string>? care_tips { get; set; }
 }

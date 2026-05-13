@@ -175,7 +175,8 @@ namespace GreenMind.Service.Services
                     Customer = x.User != null ? x.User.Name : "Unknown",
                     Date = x.OrderDate.ToString("dd/MM/yyyy"),
                     Price = x.TotalAmount.ToString("0.##"),
-                    Status = x.Status
+                   
+                    Status = x.Status.ToString()
                 })
                 .ToListAsync();
 

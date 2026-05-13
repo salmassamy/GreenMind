@@ -1,43 +1,59 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GreenMind.ServiceAbstraction.DTOs
 {
     public class FertilizerRecommendationDto
     {
         [Required(ErrorMessage = "Crop name is required")]
-        public string? Crop { get; set; }
+        [JsonPropertyName("crop_name")]
+        public string CropName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Growth stage is required")]
+        [JsonPropertyName("growth_stage")]
+        public string GrowthStage { get; set; } = string.Empty;
 
         [Required]
-        [Range(0, 140, ErrorMessage = "Nitrogen must be between 0 and 140")]
+        [Range(0, 120)]
+        [JsonPropertyName("N")]
         public double Nitrogen { get; set; }
 
         [Required]
-        [Range(0, 120, ErrorMessage = "Phosphorus must be between 0 and 120")]
+        [Range(0, 50)]
+        [JsonPropertyName("P")]
         public double Phosphorus { get; set; }
 
         [Required]
-        [Range(0, 200, ErrorMessage = "Potassium must be between 0 and 200")]
+        [Range(0, 200)]
+        [JsonPropertyName("K")]
         public double Potassium { get; set; }
 
         [Required]
-        [Range(5, 8.5, ErrorMessage = "PH must be between 5 and 8.5")]
+        [Range(7.0, 8.5)]
+        [JsonPropertyName("ph")]
         public double PH { get; set; }
 
         [Required]
-        [Range(10, 45, ErrorMessage = "Temperature must be between 10 and 45")]
+        [Range(10, 45)]
+        [JsonPropertyName("temperature")]
         public double Temperature { get; set; }
 
         [Required]
-        [Range(20, 90, ErrorMessage = "Humidity must be between 20 and 90")]
+        [Range(20, 80)]
+        [JsonPropertyName("humidity")]
         public double Humidity { get; set; }
 
         [Required]
-        [Range(1, 12, ErrorMessage = "Month must be between 1 and 12")]
+        [Range(1, 12)]
+        [JsonPropertyName("month")]
         public int Month { get; set; }
 
-        // في الـ DTO بتاعك
         [Required]
-        [RegularExpression("^(Clay|Sandy|Loamy|Silty)$", ErrorMessage = "Invalid soil type")]
-        public string? SoilType { get; set; }
+        [JsonPropertyName("soil_type")]
+        public string SoilType { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("governorate")]
+        public string Governorate { get; set; } = string.Empty;
     }
 }

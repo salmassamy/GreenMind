@@ -30,7 +30,6 @@ namespace GreenMind.Service.Services
                 throw new Exception("Cannot save review: Database must have at least one User and one Product to satisfy constraints.");
             }
 
-         
             var review = new Review
             {
                 Name = dto.Name?.Trim() ?? string.Empty,
@@ -41,7 +40,6 @@ namespace GreenMind.Service.Services
                 Comment = WebUtility.HtmlEncode(dto.Message?.Trim() ?? string.Empty),
 
                 ReviewDate = DateTime.UtcNow,
-
                 UserId = defaultUser.Id,
                 ProductId = defaultProduct.Id
             };
@@ -57,18 +55,27 @@ namespace GreenMind.Service.Services
             }
         }
 
-        public async Task<List<ReviewResponseDto>> GetReviewsAsync(int limit = 3)
+        public async Task<List<ReviewResponseDto>> GetReviewsAsync(int? limit)
         {
-            return await _context.Reviews
+            var query = _context.Reviews
+                .Include(r => r.User)
                 .OrderByDescending(r => r.ReviewDate)
-                .Take(limit)
+                .AsQueryable();
+
+            if (limit.HasValue && limit.Value > 0)
+            {
+                query = query.Take(limit.Value);
+            }
+
+            return await query
                 .Select(r => new ReviewResponseDto
                 {
                     Id = r.Id,
-                    Name = r.Name,
+                    Name = r.User.Name,
                     Position = r.Position,
-
                     Message = r.Comment,
+                    // التعديل هنا: نرجع قيمة الصورة كما هي في الداتابيز (سواء لينك أو null)
+                    UserImage = r.User.ProfilePic,
                     CreatedAt = r.ReviewDate
                 })
                 .ToListAsync();

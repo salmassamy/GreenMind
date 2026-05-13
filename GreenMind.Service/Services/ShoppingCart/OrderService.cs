@@ -24,13 +24,14 @@ namespace GreenMind.Service.Services.ShoppingCart
         {
             var orders = await _context.Orders
                 .Where(o => o.UserId == userId)
-                .OrderByDescending(o => o.OrderDate) 
+                .OrderByDescending(o => o.OrderDate)
                 .Select(o => new OrderResponseDto
                 {
                     Id = o.Id,
                     OrderDate = o.OrderDate,
                     TotalAmount = o.TotalAmount,
-                    Status = o.Status
+                    // ✅ التعديل هنا: ضيفي ToString()
+                    Status = o.Status.ToString()
                 })
                 .ToListAsync();
 
@@ -80,7 +81,7 @@ namespace GreenMind.Service.Services.ShoppingCart
             {
                 UserId = userId,
                 OrderDate = DateTime.UtcNow,
-                Status = "Pending",
+                Status = OrderStatus.Pending,
                 SubTotal = subTotal,            
                 DiscountAmount = discount,     
                 ShippingCost = shipping,      

@@ -1,13 +1,15 @@
-﻿using GreenMind.ServiceAbstraction.DTOs; // تأكدي من إضافة ده
+﻿using GreenMind.ServiceAbstraction.DTOs;
 using GreenMind.ServiceAbstraction.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims; 
 using System.Linq;
 
 namespace GreenMindAI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] 
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
@@ -17,9 +19,20 @@ namespace GreenMindAI.Controllers
             _cartService = cartService;
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetCart(int userId)
+        private int GetUserId()
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                throw new UnauthorizedAccessException("User is not identified.");
+            }
+            return int.Parse(userIdClaim.Value);
+        }
+
+        [HttpGet] 
+        public async Task<IActionResult> GetCart()
+        {
+            int userId = GetUserId();
             var cart = await _cartService.GetCartByUserIdAsync(userId);
 
             if (cart == null || cart.Items == null)
@@ -48,22 +61,12 @@ namespace GreenMindAI.Controllers
         }
 
         [HttpPost("add")]
-        // [Authorize] 
-        public async Task<IActionResult> AddToCart([FromBody] AddToCartDto request) // هنا التغيير
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartDto request)
         {
-            // 1. الجزء بتاع الـ Claim معمول له Comment زي ما هو
-            /* var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return Unauthorized();
-            int userId = int.Parse(userIdClaim.Value);
-            */
-
-            // 2. هنستخدم userId ثابت (6   ) للتجربة زي ما إنتي عاملة
-            int userId = 6;
-
-            // 3. بنسحب البيانات من الـ request DTO اللي جاي من الفرونت إند
+            int userId = GetUserId(); 
             await _cartService.AddItemToCartAsync(userId, request.ProductId, request.Quantity);
 
-            return Ok(new { message = "Product added successfully to your account's cart!" });
+            return Ok(new { message = "Product added successfully to your cart!" });
         }
 
         [HttpPut("update-quantity")]
@@ -81,25 +84,10 @@ namespace GreenMindAI.Controllers
         }
 
         [HttpDelete("clear")]
-        // [Authorize]
         public async Task<IActionResult> ClearCart()
         {
-            // 1. تعليق مؤقت للجزء بتاع الـ Claim عشان رحاب تمسح الكارت من غير Token
-            /* var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-            {
-                return Unauthorized();
-            }
-
-            int userId = int.Parse(userIdClaim.Value);
-            */
-
-            // 2. تثبيت الـ userId على رقم 1 للتجربة
-            int userId = 6;
-
+            int userId = GetUserId(); 
             await _cartService.ClearCartAsync(userId);
-
             return Ok(new { message = "Cart cleared successfully" });
         }
     }

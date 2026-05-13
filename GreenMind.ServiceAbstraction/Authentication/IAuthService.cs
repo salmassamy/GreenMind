@@ -1,16 +1,16 @@
 ﻿using GreenMind.Service.Authentication.DTOs;
 using GreenMind.ServiceAbstraction.Authentication.DTOs;
-using GreenMind.ServiceAbstraction.DTOs;
 
 namespace GreenMind.ServiceAbstraction.Authentication
 {
     public interface IAuthService
     {
-        Task<AuthResponseDto> RegisterUserAsync(RegisterUserDto dto);
-        Task<AuthResponseDto> LoginAsync(LoginDto dto);
-        Task<string> ForgotPasswordAsync(ForgotPasswordRequestDto dto);
-        Task<string> ResetPasswordAsync(ResetPasswordDto dto);
-        Task<AuthResponseDto> GoogleLoginAsync(string token, string role);
-        Task<AuthResponseDto> FacebookLoginAsync(string token, string role);
+
+        Task<string> RegisterUserAsync(RegisterUserDto dto);
+
+        Task<string> LoginAsync(LoginDto dto);
+        Task ResetPasswordAsync(ResetPasswordDto dto);
+
+        Task<AuthResponseDto> ExternalLoginAsync(string name, string role);
     }
 }

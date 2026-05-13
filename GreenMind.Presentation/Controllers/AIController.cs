@@ -127,7 +127,7 @@ namespace GreenMind.Presentation.Controllers
 
             var finalResults = new List<object>();
             string aiServerUrl = "https://myarr-plant-fastapi.hf.space/predict";
-            string hfToken = "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";
+            string hfToken = "";// "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";
 
             try
             {

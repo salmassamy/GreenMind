@@ -1,13 +1,15 @@
-﻿using GreenMind.ServiceAbstraction.DTOs; // تأكدي من إضافة ده
+﻿using GreenMind.ServiceAbstraction.DTOs;
 using GreenMind.ServiceAbstraction.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims; 
 using System.Linq;
 
 namespace GreenMindAI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] 
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
@@ -17,9 +19,20 @@ namespace GreenMindAI.Controllers
             _cartService = cartService;
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetCart(int userId)
+        private int GetUserId()
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                throw new UnauthorizedAccessException("User is not identified.");
+            }
+            return int.Parse(userIdClaim.Value);
+        }
+
+        [HttpGet] 
+        public async Task<IActionResult> GetCart()
+        {
+            int userId = GetUserId();
             var cart = await _cartService.GetCartByUserIdAsync(userId);
 
             if (cart == null || cart.Items == null)
@@ -46,23 +59,14 @@ namespace GreenMindAI.Controllers
 
             return Ok(response);
         }
-       
+
         [HttpPost("add")]
-        [Authorize] 
-        public async Task<IActionResult> AddToCart(int productId, int quantity)
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartDto request)
         {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            int userId = GetUserId(); 
+            await _cartService.AddItemToCartAsync(userId, request.ProductId, request.Quantity);
 
-            if (userIdClaim == null)
-            {
-                return Unauthorized();
-            }
-
-            int userId = int.Parse(userIdClaim.Value);
-
-            await _cartService.AddItemToCartAsync(userId, productId, quantity);
-
-            return Ok(new { message = "Product added successfully to your account's cart!" });
+            return Ok(new { message = "Product added successfully to your cart!" });
         }
 
         [HttpPut("update-quantity")]
@@ -79,21 +83,11 @@ namespace GreenMindAI.Controllers
             return Ok(new { message = "Item removed" });
         }
 
-        [HttpDelete("clear")] 
-        [Authorize]
+        [HttpDelete("clear")]
         public async Task<IActionResult> ClearCart()
         {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-            {
-                return Unauthorized();
-            }
-
-            int userId = int.Parse(userIdClaim.Value);
-
+            int userId = GetUserId(); 
             await _cartService.ClearCartAsync(userId);
-
             return Ok(new { message = "Cart cleared successfully" });
         }
     }

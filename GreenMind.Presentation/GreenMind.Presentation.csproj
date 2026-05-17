@@ -8,9 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.9" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.14" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GreenMind.Domain\GreenMind.Domain.csproj" />
+    <ProjectReference Include="..\GreenMind.Presistance\GreenMind.Presistance.csproj" />
     <ProjectReference Include="..\GreenMind.ServiceAbstraction\GreenMind.ServiceAbstraction.csproj" />
     <ProjectReference Include="..\GreenMind.Service\GreenMind.Service.csproj" />
   </ItemGroup>

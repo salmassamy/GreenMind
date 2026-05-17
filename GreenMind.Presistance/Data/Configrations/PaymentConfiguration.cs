@@ -8,7 +8,6 @@ namespace GreenMind.Presistance.Data.Configrations
     {
         public void Configure(EntityTypeBuilder<Payment> builder)
         {
-            // حل تحذير الـ Amount
             builder.Property(p => p.Amount).HasColumnType("decimal(18,2)");
         }
     }

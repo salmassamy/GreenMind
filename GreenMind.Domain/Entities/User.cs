@@ -11,9 +11,12 @@ namespace GreenMind.Domain.Entities
     {
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        public string PasswordHash { get; set; } = null!;
      
         public ICollection<Address> Addresses { get; set; } = new HashSet<Address>();
         public Cart Cart { get; set; } = null!;
+        public string? Phone { get; set; }
+        public string? Gender { get; set; }
+        public string? ProfilePic { get; set; }
     }
 }

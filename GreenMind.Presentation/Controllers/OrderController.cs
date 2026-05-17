@@ -6,9 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GreenMind.Presentation.Controllers
@@ -31,13 +29,12 @@ namespace GreenMind.Presentation.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null)
-                return Unauthorized();
+                return Unauthorized(new { message = "You must be logged in to place an order." });
 
             int userId = int.Parse(userIdClaim.Value);
 
             try
             {
-               
                 var orderId = await _orderService.PlaceOrderAsync(userId, checkoutDto);
 
                 return Ok(new
@@ -48,15 +45,14 @@ namespace GreenMind.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                
                 return BadRequest(new { message = ex.Message });
             }
         }
+
         [HttpGet("my-orders")]
         public async Task<IActionResult> GetMyOrders()
         {
-            
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null)
                 return Unauthorized();

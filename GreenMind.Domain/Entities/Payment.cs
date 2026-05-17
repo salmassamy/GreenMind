@@ -9,7 +9,7 @@ namespace GreenMind.Domain.Entities
     public class Payment : BaseEntity
     {
         public decimal Amount { get; set; }
-        public string Method { get; set; } = null!; // Cash, Credit Card
+        public string Method { get; set; } = null!; 
         public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
 
         public int OrderId { get; set; }

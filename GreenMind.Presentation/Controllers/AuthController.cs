@@ -1,7 +1,9 @@
 ﻿using GreenMind.Service.Authentication.DTOs;
+using GreenMind.Service.Authentication.Services;
 using GreenMind.ServiceAbstraction.Authentication;
+using GreenMind.ServiceAbstraction.Authentication.DTOs;
+using GreenMind.ServiceAbstraction.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 
 namespace GreenMindAI.Controllers
 {
@@ -16,42 +18,57 @@ namespace GreenMindAI.Controllers
             _authService = authService;
         }
 
-      
-        [AllowAnonymous]
-        [HttpPost("register-user")]
-        public async Task<IActionResult> RegisterUser(RegisterUserDto dto)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterUserDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var result = await _authService.RegisterUserAsync(dto);
+            return Ok(result);
+        }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
             try
             {
-                var token = await _authService.RegisterUserAsync(dto);
-                return Ok(token);
+                var response = await _authService.LoginAsync(dto);
+                return Ok(response);
             }
-            catch (Exception ex)
+            catch (AuthHttpException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (Exception )
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
-     
-        [AllowAnonymous]
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequestDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var result = await _authService.ForgotPasswordAsync(dto);
+            return Ok(new { message = result });
+        }
 
-            try
-            {
-                var token = await _authService.LoginAsync(dto);
-                return Ok(token);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(401, new { message = ex.Message });
-            }
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+            return Ok(new { message = result });
+        }
+
+        [HttpPost("google")]
+        public async Task<IActionResult> GoogleLogin(GoogleLoginDto dto)
+        {
+            var result = await _authService.GoogleLoginAsync(dto.Token, dto.Role);
+            return Ok(result);
+        }
+
+        [HttpPost("facebook")]
+        public async Task<IActionResult> FacebookLogin(FacebookLoginDto dto)
+        {
+            var result = await _authService.FacebookLoginAsync(dto.Token, dto.Role);
+            return Ok(result);
         }
     }
 }

@@ -8,32 +8,33 @@ namespace GreenMind.Service.Authentication.Services
 {
     public class JwtService
     {
-        private readonly IConfiguration _config;
+        private readonly IConfiguration _configuration;
 
-        public JwtService(IConfiguration config)
+        public JwtService(IConfiguration configuration)
         {
-            _config = config;
+            _configuration = configuration;
         }
 
-        public string GenerateToken(string userId, string email, string role)
+        public string GenerateToken(string email, string role, int id, string name)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
-        new Claim(ClaimTypes.NameIdentifier, userId), // السطر ده هو اللي الـ OrderController محتاجه
-        new Claim(ClaimTypes.Email, email),
-        new Claim(ClaimTypes.Role, role)
-    };
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                new Claim(ClaimTypes.Name, name),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role)
+            };
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(7),
+                expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: creds
             );
 
